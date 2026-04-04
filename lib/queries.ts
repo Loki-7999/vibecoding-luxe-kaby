@@ -12,6 +12,7 @@ export interface Property {
   area: number;
   image_url: string;
   image_alt: string;
+  gallery_urls?: string[];
   badge?: string | null;
   featured: boolean;
   created_at: string;
@@ -65,4 +66,20 @@ export async function getPaginatedProperties(page: number = 1): Promise<Paginate
     page,
     totalPages,
   };
+}
+
+export async function getPropertyBySlug(slug: string): Promise<Property | null> {
+  const { data, error } = await supabase
+    .from('properties')
+    .select('*')
+    .eq('slug', slug)
+    .single();
+
+  if (error || !data) {
+    if (error && error.code !== 'PGRST116') {
+      console.error('Error fetching property by slug:', error);
+    }
+    return null;
+  }
+  return data as Property;
 }
