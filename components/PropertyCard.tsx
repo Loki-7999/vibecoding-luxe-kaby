@@ -1,12 +1,12 @@
-import { Property } from "@/lib/data";
+import { Property } from "@/lib/queries";
 
 interface PropertyCardProps {
   property: Property;
-  className?: string; // e.g. for hidden xl:flex etc in the design
+  className?: string;
 }
 
 export default function PropertyCard({ property, className = "" }: PropertyCardProps) {
-  const isRent = property.priceType === "rent";
+  const isRent = property.price_type === "rent";
   const badgeClass = isRent
     ? "bg-mosque/90"
     : "bg-nordic-dark/90";
@@ -18,9 +18,9 @@ export default function PropertyCard({ property, className = "" }: PropertyCardP
       <div className="relative aspect-[4/3] overflow-hidden">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          alt={property.imageAlt}
+          alt={property.image_alt}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-          src={property.imageUrl}
+          src={property.image_url}
         />
         <button className="absolute top-3 right-3 p-2 bg-white/90 dark:bg-black/50 rounded-full hover:bg-mosque hover:text-white transition-colors text-nordic-dark">
           <span className="material-icons text-lg">favorite_border</span>

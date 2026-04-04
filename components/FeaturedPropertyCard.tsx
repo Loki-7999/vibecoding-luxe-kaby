@@ -1,4 +1,4 @@
-import { Property } from "@/lib/data";
+import { Property } from "@/lib/queries";
 
 interface FeaturedPropertyCardProps {
   property: Property;
@@ -10,9 +10,9 @@ export default function FeaturedPropertyCard({ property }: FeaturedPropertyCardP
       <div className="aspect-[4/3] w-full overflow-hidden relative">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          alt={property.imageAlt}
+          alt={property.image_alt}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-          src={property.imageUrl}
+          src={property.image_url}
         />
         {property.badge && (
           <div className="absolute top-4 left-4 bg-white/90 dark:bg-black/80 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider text-nordic-dark dark:text-white">

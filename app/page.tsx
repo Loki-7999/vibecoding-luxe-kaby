@@ -1,9 +1,24 @@
 import Navbar from "@/components/Navbar";
 import FeaturedPropertyCard from "@/components/FeaturedPropertyCard";
 import PropertyCard from "@/components/PropertyCard";
-import { featuredProperties, newProperties } from "@/lib/data";
+import Pagination from "@/components/Pagination";
+import { getFeaturedProperties, getPaginatedProperties } from "@/lib/queries";
 
-export default function Home() {
+interface HomePageProps {
+  searchParams: Promise<{ page?: string }>;
+}
+
+export default async function Home({ searchParams }: HomePageProps) {
+  const params = await searchParams;
+  const currentPage = Math.max(1, parseInt(params.page ?? "1", 10));
+
+  const [featured, paginated] = await Promise.all([
+    getFeaturedProperties(),
+    getPaginatedProperties(currentPage),
+  ]);
+
+  const { properties, totalPages } = paginated;
+
   return (
     <>
       <Navbar />
@@ -57,6 +72,7 @@ export default function Home() {
           </div>
         </section>
 
+        {/* Featured Collections */}
         <section className="mb-16">
           <div className="flex items-end justify-between mb-8">
             <div>
@@ -75,12 +91,13 @@ export default function Home() {
             </a>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {featuredProperties.map((property) => (
+            {featured.map((property) => (
               <FeaturedPropertyCard key={property.id} property={property} />
             ))}
           </div>
         </section>
 
+        {/* New in Market */}
         <section>
           <div className="flex items-end justify-between mb-8">
             <div>
@@ -103,21 +120,21 @@ export default function Home() {
               </button>
             </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {newProperties.map((prop, idx) => {
-              let extraClass = "";
-              if (idx === 4) extraClass = "hidden xl:flex";
-              if (idx === 5) extraClass = "hidden lg:flex";
-              return (
-                <PropertyCard key={prop.id} property={prop} className={extraClass} />
-              );
-            })}
-          </div>
-          <div className="mt-12 text-center">
-            <button className="px-8 py-3 bg-white dark:bg-white/5 border border-nordic-dark/10 dark:border-white/10 hover:border-mosque hover:text-mosque text-nordic-dark dark:text-white font-medium rounded-lg transition-all hover:shadow-md">
-              Load more properties
-            </button>
-          </div>
+
+          {properties.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {properties.map((property) => (
+                <PropertyCard key={property.id} property={property} />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-20 text-nordic-muted">
+              <span className="material-icons text-5xl mb-4 block">search_off</span>
+              <p>No properties found.</p>
+            </div>
+          )}
+
+          <Pagination currentPage={currentPage} totalPages={totalPages} />
         </section>
       </main>
     </>
