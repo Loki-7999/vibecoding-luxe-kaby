@@ -41,16 +41,23 @@ export async function getFeaturedProperties(): Promise<Property[]> {
   return data as Property[];
 }
 
-export async function getPaginatedProperties(page: number = 1): Promise<PaginatedProperties> {
+export async function getPaginatedProperties(page: number = 1, searchQuery?: string): Promise<PaginatedProperties> {
   const from = (page - 1) * ITEMS_PER_PAGE;
   const to = from + ITEMS_PER_PAGE - 1;
 
-  const { data, error, count } = await supabase
+  let query = supabase
     .from('properties')
     .select('*', { count: 'exact' })
     .eq('featured', false)
     .order('created_at', { ascending: true })
     .range(from, to);
+
+  if (searchQuery) {
+    const safeQuery = searchQuery.replace(/"/g, ''); // Escaping double quotes
+    query = query.or(`title.ilike."%${safeQuery}%",location.ilike."%${safeQuery}%"`);
+  }
+
+  const { data, error, count } = await query;
 
   if (error) {
     console.error('Error fetching properties:', error);
