@@ -48,13 +48,14 @@ export async function getPaginatedProperties(page: number = 1, searchQuery?: str
   let query = supabase
     .from('properties')
     .select('*', { count: 'exact' })
-    .eq('featured', false)
     .order('created_at', { ascending: true })
     .range(from, to);
 
   if (searchQuery) {
-    const safeQuery = searchQuery.replace(/"/g, ''); // Escaping double quotes
-    query = query.or(`title.ilike."%${safeQuery}%",location.ilike."%${safeQuery}%"`);
+    const primaryTerm = searchQuery.split(',')[0].trim().replace(/[^a-zA-Z0-9 ]/g, ''); // Extract main term
+    query = query.or(`title.ilike.%${primaryTerm}%,location.ilike.%${primaryTerm}%`);
+  } else {
+    query = query.eq('featured', false); // Only exclude featured items when NOT searching
   }
 
   const { data, error, count } = await query;
