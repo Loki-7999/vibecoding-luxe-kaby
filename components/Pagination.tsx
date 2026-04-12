@@ -1,4 +1,7 @@
+"use client";
+
 import Link from 'next/link';
+import { usePathname, useSearchParams } from 'next/navigation';
 
 interface PaginationProps {
   currentPage: number;
@@ -6,7 +9,16 @@ interface PaginationProps {
 }
 
 export default function Pagination({ currentPage, totalPages }: PaginationProps) {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   if (totalPages <= 1) return null;
+
+  const createPageURL = (pageNumber: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('page', pageNumber.toString());
+    return `${pathname}?${params.toString()}`;
+  };
 
   const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
 
@@ -18,7 +30,7 @@ export default function Pagination({ currentPage, totalPages }: PaginationProps)
       {/* Previous */}
       {prevPage ? (
         <Link
-          href={`/?page=${prevPage}`}
+          href={createPageURL(prevPage)}
           className="flex items-center gap-1 px-4 py-2 rounded-lg bg-white dark:bg-white/5 border border-nordic-dark/10 dark:border-white/10 text-nordic-dark dark:text-white text-sm font-medium hover:border-mosque hover:text-mosque transition-all hover:shadow-md"
         >
           <span className="material-icons text-sm">arrow_back</span>
@@ -36,7 +48,7 @@ export default function Pagination({ currentPage, totalPages }: PaginationProps)
         {pages.map((page) => (
           <Link
             key={page}
-            href={`/?page=${page}`}
+            href={createPageURL(page)}
             className={`w-10 h-10 flex items-center justify-center rounded-lg text-sm font-medium transition-all ${
               page === currentPage
                 ? 'bg-nordic-dark text-white shadow-lg shadow-nordic-dark/10'
@@ -51,7 +63,7 @@ export default function Pagination({ currentPage, totalPages }: PaginationProps)
       {/* Next */}
       {nextPage ? (
         <Link
-          href={`/?page=${nextPage}`}
+          href={createPageURL(nextPage)}
           className="flex items-center gap-1 px-4 py-2 rounded-lg bg-white dark:bg-white/5 border border-nordic-dark/10 dark:border-white/10 text-nordic-dark dark:text-white text-sm font-medium hover:border-mosque hover:text-mosque transition-all hover:shadow-md"
         >
           Siguiente

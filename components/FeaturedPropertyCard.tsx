@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Property } from "@/lib/queries";
 
 interface FeaturedPropertyCardProps {
@@ -6,7 +7,7 @@ interface FeaturedPropertyCardProps {
 
 export default function FeaturedPropertyCard({ property }: FeaturedPropertyCardProps) {
   return (
-    <div className="group relative rounded-xl overflow-hidden shadow-soft bg-white dark:bg-white/5 cursor-pointer">
+    <Link href={`/properties/${property.slug}`} className="group relative rounded-xl overflow-hidden shadow-soft bg-white dark:bg-white/5 block">
       <div className="aspect-[4/3] w-full overflow-hidden relative">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
@@ -50,6 +51,6 @@ export default function FeaturedPropertyCard({ property }: FeaturedPropertyCardP
           </div>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }

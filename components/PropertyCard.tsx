@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Property } from "@/lib/queries";
 
 interface PropertyCardProps {
@@ -12,8 +13,9 @@ export default function PropertyCard({ property, className = "" }: PropertyCardP
     : "bg-nordic-dark/90";
 
   return (
-    <article
-      className={`bg-white dark:bg-white/5 rounded-xl overflow-hidden shadow-card hover:shadow-soft transition-all duration-300 group cursor-pointer h-full flex flex-col ${className}`}
+    <Link
+      href={`/properties/${property.slug}`}
+      className={`bg-white dark:bg-white/5 rounded-xl overflow-hidden shadow-card hover:shadow-soft transition-all duration-300 group cursor-pointer h-full flex flex-col block ${className}`}
     >
       <div className="relative aspect-[4/3] overflow-hidden">
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -57,6 +59,6 @@ export default function PropertyCard({ property, className = "" }: PropertyCardP
           </div>
         </div>
       </div>
-    </article>
+    </Link>
   );
 }

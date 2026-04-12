@@ -1,0 +1,51 @@
+"use client";
+
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+import L from "leaflet";
+import { useEffect, useState } from "react";
+
+export default function PropertyMap() {
+  const [mounted, setMounted] = useState(false);
+  const position: [number, number] = [37.4419, -122.143]; // Default to Palo Alto
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <div className="w-full h-full bg-slate-100 flex items-center justify-center">
+        <span className="material-icons text-mosque animate-pulse text-4xl">map</span>
+      </div>
+    );
+  }
+
+  const customIcon = L.divIcon({
+    className: "custom-leaflet-icon",
+    html: `<div class="w-8 h-8 bg-mosque rounded-full border-4 border-white shadow-lg animate-bounce flex items-center justify-center">
+            <span class="material-icons text-white text-[12px]">home</span>
+           </div>`,
+    iconSize: [32, 32],
+    iconAnchor: [16, 32],
+  });
+
+  return (
+    <div className="w-full h-full relative z-0">
+      <MapContainer
+        center={position}
+        zoom={13}
+        scrollWheelZoom={false}
+        className="w-full h-full z-0"
+      >
+        <TileLayer
+          attribution='&copy; <a href="https://carto.com/attributions">CARTO</a>'
+          url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+        />
+        <Marker position={position} icon={customIcon}>
+          <Popup>1234 Serenity Lane, Palo Alto, CA</Popup>
+        </Marker>
+      </MapContainer>
+    </div>
+  );
+}
