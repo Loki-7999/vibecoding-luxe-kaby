@@ -7,17 +7,18 @@ import SearchAndFilters from "@/components/SearchAndFilters";
 import { getFeaturedProperties, getPaginatedProperties } from "@/lib/queries";
 
 interface HomePageProps {
-  searchParams: Promise<{ page?: string; query?: string }>;
+  searchParams: Promise<{ page?: string; query?: string; type?: string }>;
 }
 
 export default async function Home({ searchParams }: HomePageProps) {
   const params = await searchParams;
   const currentPage = Math.max(1, parseInt(params.page ?? "1", 10));
   const searchQuery = params.query || "";
+  const propertyType = params.type || "All";
 
   const [featured, paginated] = await Promise.all([
     getFeaturedProperties(),
-    getPaginatedProperties(currentPage, searchQuery),
+    getPaginatedProperties(currentPage, searchQuery, propertyType),
   ]);
 
   const { properties, totalPages } = paginated;
@@ -42,8 +43,8 @@ export default async function Home({ searchParams }: HomePageProps) {
           </div>
         </section>
 
-        {/* Featured Collections (Hidden when searching) */}
-        {!searchQuery && featured.length > 0 && (
+        {/* Featured Collections (Hidden when searching or filtering) */}
+        {!searchQuery && propertyType === "All" && featured.length > 0 && (
           <section className="mb-16">
             <div className="flex items-end justify-between mb-8">
               <div>
