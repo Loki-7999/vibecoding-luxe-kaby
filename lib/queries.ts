@@ -15,6 +15,7 @@ export interface Property {
   badge?: string | null;
   featured: boolean;
   created_at: string;
+  property_type?: string;
 }
 
 export interface PaginatedProperties {
@@ -31,7 +32,8 @@ export async function getFeaturedProperties(): Promise<Property[]> {
     .from('properties')
     .select('*')
     .eq('featured', true)
-    .order('created_at', { ascending: true });
+    .order('created_at', { ascending: true })
+    .limit(2);
 
   if (error) {
     console.error('Error fetching featured properties:', error);
@@ -40,16 +42,28 @@ export async function getFeaturedProperties(): Promise<Property[]> {
   return data as Property[];
 }
 
-export async function getPaginatedProperties(page: number = 1): Promise<PaginatedProperties> {
+export async function getPaginatedProperties(page: number = 1, searchQuery?: string, type?: string): Promise<PaginatedProperties> {
   const from = (page - 1) * ITEMS_PER_PAGE;
   const to = from + ITEMS_PER_PAGE - 1;
 
-  const { data, error, count } = await supabase
+  let query = supabase
     .from('properties')
     .select('*', { count: 'exact' })
-    .eq('featured', false)
     .order('created_at', { ascending: true })
     .range(from, to);
+
+  if (searchQuery) {
+    const primaryTerm = searchQuery.split(',')[0].trim().replace(/[^a-zA-Z0-9 ]/g, ''); // Extract main term
+    query = query.or(`title.ilike.%${primaryTerm}%,location.ilike.%${primaryTerm}%`);
+  } else {
+    query = query.eq('featured', false); // Only exclude featured items when NOT searching
+  }
+
+  if (type && type !== 'All') {
+    query = query.eq('property_type', type);
+  }
+
+  const { data, error, count } = await query;
 
   if (error) {
     console.error('Error fetching properties:', error);
