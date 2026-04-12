@@ -38,5 +38,35 @@
       "rent": "Affitto",
       "noProperties": "Nessuna proprietà trovata."
     }
+  },
+  "property": {
+    "forRent": "In Affitto",
+    "forSale": "In Vendita",
+    "viewAllPhotos": "Visualizza tutte le foto",
+    "topRatedAgent": "Agente Più Votato",
+    "scheduleVisit": "Pianifica Visita",
+    "contactAgent": "Contatta l'agente",
+    "viewOnMap": "Vedi sulla mappa",
+    "features": "Caratteristiche",
+    "sqm": "Metri Quadrati",
+    "bedrooms": "Camere da letto",
+    "bathrooms": "Bagni",
+    "garage": "Box auto",
+    "about": "Informazioni su questa casa",
+    "readMore": "Leggi di più",
+    "amenities": "Servizi",
+    "smartHome": "Sistema Smart Home",
+    "pool": "Piscina",
+    "heating": "Riscaldamento e Raffreddamento Centralizzati",
+    "ev": "Ricarica veicoli elettrici",
+    "gym": "Palestra Privata",
+    "wineCellar": "Cantina per vini",
+    "estimatedPayment": "Pagamento stimato",
+    "startingFrom": "A partire da",
+    "withDownPayment": "con 20% di anticipo",
+    "calculateMortgage": "Calcola Mutuo",
+    "mo": "/mese",
+    "bedsShort": "Letti",
+    "bathsShort": "Bagni"
   }
 }

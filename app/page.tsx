@@ -67,7 +67,7 @@ export default async function Home({ searchParams }: HomePageProps) {
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {featured.map((property: any) => (
-                <FeaturedPropertyCard key={property.id} property={property} />
+                <FeaturedPropertyCard key={property.id} property={property} dict={dictionary.property} />
               ))}
             </div>
           </section>
@@ -100,7 +100,7 @@ export default async function Home({ searchParams }: HomePageProps) {
           {properties.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {properties.map((property: any) => (
-                <PropertyCard key={property.id} property={property} />
+                <PropertyCard key={property.id} property={property} dict={dictionary.property} />
               ))}
             </div>
           ) : (

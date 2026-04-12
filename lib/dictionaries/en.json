@@ -38,5 +38,35 @@
       "rent": "Rent",
       "noProperties": "No properties found."
     }
+  },
+  "property": {
+    "forRent": "For Rent",
+    "forSale": "For Sale",
+    "viewAllPhotos": "View All Photos",
+    "topRatedAgent": "Top Rated Agent",
+    "scheduleVisit": "Schedule Visit",
+    "contactAgent": "Contact Agent",
+    "viewOnMap": "View on Map",
+    "features": "Property Features",
+    "sqm": "Square Meters",
+    "bedrooms": "Bedrooms",
+    "bathrooms": "Bathrooms",
+    "garage": "Garage",
+    "about": "About this home",
+    "readMore": "Read more",
+    "amenities": "Amenities",
+    "smartHome": "Smart Home System",
+    "pool": "Swimming Pool",
+    "heating": "Central Heating & Cooling",
+    "ev": "Electric Vehicle Charging",
+    "gym": "Private Gym",
+    "wineCellar": "Wine Cellar",
+    "estimatedPayment": "Estimated Payment",
+    "startingFrom": "Starting from",
+    "withDownPayment": "with 20% down",
+    "calculateMortgage": "Calculate Mortgage",
+    "mo": "/mo",
+    "bedsShort": "Beds",
+    "bathsShort": "Baths"
   }
 }

@@ -3,6 +3,7 @@ import { getPropertyBySlug } from "@/lib/queries";
 import Navbar from "@/components/Navbar";
 import PropertyGallery from "@/components/PropertyGallery";
 import MapClientWrapper from "@/components/MapClientWrapper";
+import { getLocale, getDictionary } from "@/lib/i18n";
 
 export async function generateMetadata({
   params,
@@ -33,6 +34,10 @@ export default async function PropertyDetailsPage({
   if (!property) {
     notFound();
   }
+
+  const locale = await getLocale();
+  const dictionary = await getDictionary(locale);
+  const t = dictionary.property;
 
   const images = property.gallery_urls?.length 
     ? property.gallery_urls 
@@ -65,17 +70,17 @@ export default async function PropertyDetailsPage({
                 )}
                 {property.price_type === "rent" ? (
                   <span className="bg-white/90 backdrop-blur text-nordic text-xs font-medium px-3 py-1.5 rounded-full uppercase tracking-wider shadow-sm">
-                    For Rent
+                    {t.forRent}
                   </span>
                 ) : (
                   <span className="bg-white/90 backdrop-blur text-nordic text-xs font-medium px-3 py-1.5 rounded-full uppercase tracking-wider shadow-sm">
-                    For Sale
+                    {t.forSale}
                   </span>
                 )}
               </div>
               <button className="absolute bottom-4 right-4 bg-white/90 hover:bg-white text-nordic px-4 py-2 rounded-lg text-sm font-medium shadow-lg backdrop-blur transition-all flex items-center gap-2">
                 <span className="material-icons text-sm">grid_view</span>
-                View All Photos
+                {t.viewAllPhotos}
               </button>
             </div>
             
@@ -88,7 +93,7 @@ export default async function PropertyDetailsPage({
                 <div className="mb-4">
                   <h1 className="text-4xl font-display font-light text-nordic mb-2">
                     ${property.price.toLocaleString()}
-                    {property.price_type === "rent" && <span className="text-xl text-nordic-muted">/mo</span>}
+                    {property.price_type === "rent" && <span className="text-xl text-nordic-muted">{t.mo}</span>}
                   </h1>
                   <p className="text-nordic/60 font-medium flex items-center gap-1">
                     <span className="material-icons text-mosque text-sm">location_on</span>
@@ -109,7 +114,7 @@ export default async function PropertyDetailsPage({
                     <h3 className="font-semibold text-nordic">Sarah Jenkins</h3>
                     <div className="flex items-center gap-1 text-xs text-mosque font-medium">
                       <span className="material-icons text-[14px]">star</span>
-                      <span>Top Rated Agent</span>
+                      <span>{t.topRatedAgent}</span>
                     </div>
                   </div>
                   <div className="ml-auto flex gap-2">
@@ -125,11 +130,11 @@ export default async function PropertyDetailsPage({
                 <div className="space-y-3">
                   <button className="w-full bg-mosque hover:bg-primary-hover text-white py-4 px-6 rounded-lg font-medium transition-all shadow-lg shadow-mosque/20 flex items-center justify-center gap-2 group">
                     <span className="material-icons text-xl group-hover:scale-110 transition-transform">calendar_today</span>
-                    Schedule Visit
+                    {t.scheduleVisit}
                   </button>
                   <button className="w-full bg-transparent border border-nordic/10 hover:border-mosque text-nordic/80 hover:text-mosque py-4 px-6 rounded-lg font-medium transition-all flex items-center justify-center gap-2">
                     <span className="material-icons text-xl">mail_outline</span>
-                    Contact Agent
+                    {t.contactAgent}
                   </button>
                 </div>
               </div>
@@ -138,7 +143,7 @@ export default async function PropertyDetailsPage({
                 <div className="relative w-full aspect-[4/3] rounded-lg overflow-hidden bg-slate-100">
                   <MapClientWrapper />
                   <a className="absolute bottom-2 right-2 z-10 bg-white/90 text-xs font-medium px-2 py-1 rounded shadow-sm text-nordic hover:text-mosque" href="#map">
-                    View on Map
+                    {t.viewOnMap}
                   </a>
                 </div>
               </div>
@@ -147,33 +152,33 @@ export default async function PropertyDetailsPage({
 
           <div className="lg:col-span-8 lg:row-start-2 -mt-8 space-y-8">
             <div className="bg-white p-8 rounded-xl shadow-sm border border-mosque/5">
-              <h2 className="text-lg font-semibold mb-6 text-nordic">Property Features</h2>
+              <h2 className="text-lg font-semibold mb-6 text-nordic">{t.features}</h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                 <div className="flex flex-col items-center justify-center p-4 bg-mosque/5 rounded-lg border border-mosque/10">
                   <span className="material-icons text-mosque text-2xl mb-2">square_foot</span>
                   <span className="text-xl font-bold text-nordic">{property.area}</span>
-                  <span className="text-xs uppercase tracking-wider text-nordic/50">Square Meters</span>
+                  <span className="text-xs uppercase tracking-wider text-nordic/50">{t.sqm}</span>
                 </div>
                 <div className="flex flex-col items-center justify-center p-4 bg-mosque/5 rounded-lg border border-mosque/10">
                   <span className="material-icons text-mosque text-2xl mb-2">bed</span>
                   <span className="text-xl font-bold text-nordic">{property.bedrooms}</span>
-                  <span className="text-xs uppercase tracking-wider text-nordic/50">Bedrooms</span>
+                  <span className="text-xs uppercase tracking-wider text-nordic/50">{t.bedrooms}</span>
                 </div>
                 <div className="flex flex-col items-center justify-center p-4 bg-mosque/5 rounded-lg border border-mosque/10">
                   <span className="material-icons text-mosque text-2xl mb-2">shower</span>
                   <span className="text-xl font-bold text-nordic">{property.bathrooms}</span>
-                  <span className="text-xs uppercase tracking-wider text-nordic/50">Bathrooms</span>
+                  <span className="text-xs uppercase tracking-wider text-nordic/50">{t.bathrooms}</span>
                 </div>
                 <div className="flex flex-col items-center justify-center p-4 bg-mosque/5 rounded-lg border border-mosque/10">
                   <span className="material-icons text-mosque text-2xl mb-2">directions_car</span>
                   <span className="text-xl font-bold text-nordic">2</span>
-                  <span className="text-xs uppercase tracking-wider text-nordic/50">Garage</span>
+                  <span className="text-xs uppercase tracking-wider text-nordic/50">{t.garage}</span>
                 </div>
               </div>
             </div>
 
             <div className="bg-white p-8 rounded-xl shadow-sm border border-mosque/5">
-              <h2 className="text-lg font-semibold mb-4 text-nordic">About this home</h2>
+              <h2 className="text-lg font-semibold mb-4 text-nordic">{t.about}</h2>
               <div className="prose prose-slate max-w-none text-nordic/70 leading-relaxed">
                 <p className="mb-4">
                   Experience modern luxury in {property.title}, strategically positioned in {property.location}. 
@@ -184,37 +189,37 @@ export default async function PropertyDetailsPage({
                 </p>
               </div>
               <button className="mt-4 text-mosque font-semibold text-sm flex items-center gap-1 hover:gap-2 transition-all">
-                Read more
+                {t.readMore}
                 <span className="material-icons text-sm">arrow_forward</span>
               </button>
             </div>
 
             <div className="bg-white p-8 rounded-xl shadow-sm border border-mosque/5">
-              <h2 className="text-lg font-semibold mb-6 text-nordic">Amenities</h2>
+              <h2 className="text-lg font-semibold mb-6 text-nordic">{t.amenities}</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8">
                 <div className="flex items-center gap-3 text-nordic/70">
                   <span className="material-icons text-mosque/60 text-sm">check_circle</span>
-                  <span>Smart Home System</span>
+                  <span>{t.smartHome}</span>
                 </div>
                 <div className="flex items-center gap-3 text-nordic/70">
                   <span className="material-icons text-mosque/60 text-sm">check_circle</span>
-                  <span>Swimming Pool</span>
+                  <span>{t.pool}</span>
                 </div>
                 <div className="flex items-center gap-3 text-nordic/70">
                   <span className="material-icons text-mosque/60 text-sm">check_circle</span>
-                  <span>Central Heating &amp; Cooling</span>
+                  <span>{t.heating}</span>
                 </div>
                 <div className="flex items-center gap-3 text-nordic/70">
                   <span className="material-icons text-mosque/60 text-sm">check_circle</span>
-                  <span>Electric Vehicle Charging</span>
+                  <span>{t.ev}</span>
                 </div>
                 <div className="flex items-center gap-3 text-nordic/70">
                   <span className="material-icons text-mosque/60 text-sm">check_circle</span>
-                  <span>Private Gym</span>
+                  <span>{t.gym}</span>
                 </div>
                 <div className="flex items-center gap-3 text-nordic/70">
                   <span className="material-icons text-mosque/60 text-sm">check_circle</span>
-                  <span>Wine Cellar</span>
+                  <span>{t.wineCellar}</span>
                 </div>
               </div>
             </div>
@@ -225,14 +230,14 @@ export default async function PropertyDetailsPage({
                   <span className="material-icons">calculate</span>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-nordic">Estimated Payment</h3>
+                  <h3 className="font-semibold text-nordic">{t.estimatedPayment}</h3>
                   <p className="text-sm text-nordic/60">
-                    Starting from <strong className="text-mosque">${Math.floor(property.price / 300).toLocaleString()}/mo</strong> with 20% down
+                    {t.startingFrom} <strong className="text-mosque">${Math.floor(property.price / 300).toLocaleString()}{t.mo}</strong> {t.withDownPayment}
                   </p>
                 </div>
               </div>
               <button className="whitespace-nowrap px-4 py-2 bg-white border border-nordic/10 rounded-lg text-sm font-semibold hover:border-mosque transition-colors text-nordic">
-                Calculate Mortgage
+                {t.calculateMortgage}
               </button>
             </div>
           </div>

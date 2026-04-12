@@ -4,9 +4,10 @@ import { Property } from "@/lib/queries";
 interface PropertyCardProps {
   property: Property;
   className?: string;
+  dict?: any;
 }
 
-export default function PropertyCard({ property, className = "" }: PropertyCardProps) {
+export default function PropertyCard({ property, className = "", dict }: PropertyCardProps) {
   const isRent = property.price_type === "rent";
   const badgeClass = isRent
     ? "bg-mosque/90"
@@ -30,14 +31,14 @@ export default function PropertyCard({ property, className = "" }: PropertyCardP
         <div
           className={`absolute bottom-3 left-3 text-white text-xs font-bold px-2 py-1 rounded ${badgeClass}`}
         >
-          {isRent ? "FOR RENT" : "FOR SALE"}
+          {isRent ? (dict?.forRent?.toUpperCase() || "FOR RENT") : (dict?.forSale?.toUpperCase() || "FOR SALE")}
         </div>
       </div>
       <div className="p-4 flex flex-col flex-grow">
         <div className="flex justify-between items-baseline mb-2">
           <h3 className="font-bold text-lg text-nordic-dark dark:text-white">
             ${property.price.toLocaleString()}
-            {isRent && <span className="text-sm font-normal text-nordic-muted">/mo</span>}
+            {isRent && <span className="text-sm font-normal text-nordic-muted">{dict?.mo || "/mo"}</span>}
           </h3>
         </div>
         <h4 className="text-nordic-dark dark:text-gray-200 font-medium truncate mb-1">

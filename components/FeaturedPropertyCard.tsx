@@ -3,9 +3,10 @@ import { Property } from "@/lib/queries";
 
 interface FeaturedPropertyCardProps {
   property: Property;
+  dict?: any;
 }
 
-export default function FeaturedPropertyCard({ property }: FeaturedPropertyCardProps) {
+export default function FeaturedPropertyCard({ property, dict }: FeaturedPropertyCardProps) {
   return (
     <Link href={`/properties/${property.slug}`} className="group relative rounded-xl overflow-hidden shadow-soft bg-white dark:bg-white/5 block">
       <div className="aspect-[4/3] w-full overflow-hidden relative">
@@ -41,10 +42,10 @@ export default function FeaturedPropertyCard({ property }: FeaturedPropertyCardP
         </div>
         <div className="flex items-center gap-6 mt-6 pt-6 border-t border-nordic-dark/5 dark:border-white/10">
           <div className="flex items-center gap-2 text-nordic-muted text-sm">
-            <span className="material-icons text-lg">king_bed</span> {property.bedrooms} Beds
+            <span className="material-icons text-lg">king_bed</span> {property.bedrooms} {dict?.bedsShort || "Beds"}
           </div>
           <div className="flex items-center gap-2 text-nordic-muted text-sm">
-            <span className="material-icons text-lg">bathtub</span> {property.bathrooms} Baths
+            <span className="material-icons text-lg">bathtub</span> {property.bathrooms} {dict?.bathsShort || "Baths"}
           </div>
           <div className="flex items-center gap-2 text-nordic-muted text-sm">
             <span className="material-icons text-lg">square_foot</span> {property.area.toLocaleString()} m²

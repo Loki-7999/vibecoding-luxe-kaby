@@ -5,10 +5,10 @@ import { useRouter } from "next/navigation";
 import { useTranslation } from "@/components/providers/I18nProvider";
 
 const languages = [
-  { code: "es", name: "Español", flag: "🇪🇸" },
-  { code: "en", name: "English", flag: "🇬🇧" },
-  { code: "fr", name: "Français", flag: "🇫🇷" },
-  { code: "it", name: "Italiano", flag: "🇮🇹" },
+  { code: "es", name: "Español", flag: "https://flagcdn.com/w40/es.png" },
+  { code: "en", name: "English", flag: "https://flagcdn.com/w40/gb.png" },
+  { code: "fr", name: "Français", flag: "https://flagcdn.com/w40/fr.png" },
+  { code: "it", name: "Italiano", flag: "https://flagcdn.com/w40/it.png" },
 ];
 
 export default function LanguageSwitcher() {
@@ -42,7 +42,8 @@ export default function LanguageSwitcher() {
         className="flex items-center gap-1 text-nordic-dark hover:text-mosque dark:text-gray-400 dark:hover:text-white transition-colors p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/5"
         title="Change Language"
       >
-        <span className="text-xl leading-none">{currentLang.flag}</span>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={currentLang.flag} alt={currentLang.code} className="w-5 h-3.5 object-cover rounded-[2px]" />
         <span className="material-icons text-sm">expand_more</span>
       </button>
 
@@ -59,7 +60,8 @@ export default function LanguageSwitcher() {
                     : "text-nordic-dark dark:text-gray-300"
                 }`}
               >
-                <span className="text-lg leading-none">{lang.flag}</span>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={lang.flag} alt={lang.code} className="w-5 h-3.5 object-cover rounded-[2px]" />
                 {lang.name}
               </button>
             ))}
