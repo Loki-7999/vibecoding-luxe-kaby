@@ -1,0 +1,42 @@
+{
+  "nav": {
+    "buy": "Comprar",
+    "rent": "Alquilar",
+    "sell": "Vender",
+    "saved": "Guardados"
+  },
+  "hero": {
+    "find": "Encuentra tu ",
+    "sanctuary": "santuario",
+    "dot": "."
+  },
+  "search": {
+    "placeholder": "Buscar por ciudad, barrio, o dirección...",
+    "button": "Buscar",
+    "filters": "Filtros",
+    "types": {
+      "All": "Todas",
+      "House": "Casa",
+      "Apartment": "Departamento",
+      "Villa": "Villa",
+      "Penthouse": "Penthouse"
+    }
+  },
+  "home": {
+    "featured": {
+      "title": "Colecciones Destacadas",
+      "description": "Propiedades selectas para el ojo exigente.",
+      "viewAll": "Ver todas"
+    },
+    "grid": {
+      "searchResults": "Resultados de Búsqueda",
+      "newInMarket": "Nuevas en el Mercado",
+      "showingMatches": "Mostrando propiedades para",
+      "freshOpportunities": "Oportunidades frescas agregadas esta semana.",
+      "all": "Todas",
+      "buy": "Comprar",
+      "rent": "Alquilar",
+      "noProperties": "No se encontraron propiedades."
+    }
+  }
+}

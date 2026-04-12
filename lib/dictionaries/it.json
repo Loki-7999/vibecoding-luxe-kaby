@@ -1,0 +1,42 @@
+{
+  "nav": {
+    "buy": "Compra",
+    "rent": "Affitto",
+    "sell": "Vendita",
+    "saved": "Salvati"
+  },
+  "hero": {
+    "find": "Trova il tuo ",
+    "sanctuary": "santuario",
+    "dot": "."
+  },
+  "search": {
+    "placeholder": "Cerca per città, quartiere o indirizzo...",
+    "button": "Cerca",
+    "filters": "Filtri",
+    "types": {
+      "All": "Tutti",
+      "House": "Casa",
+      "Apartment": "Appartamento",
+      "Villa": "Villa",
+      "Penthouse": "Attico"
+    }
+  },
+  "home": {
+    "featured": {
+      "title": "Collezioni in primo piano",
+      "description": "Proprietà curate per l'occhio esigente.",
+      "viewAll": "Vedi tutti"
+    },
+    "grid": {
+      "searchResults": "Risultati della ricerca",
+      "newInMarket": "Nuovi sul mercato",
+      "showingMatches": "Mostrando le proprietà corrispondenti a",
+      "freshOpportunities": "Nuove opportunità aggiunte questa settimana.",
+      "all": "Tutti",
+      "buy": "Compra",
+      "rent": "Affitto",
+      "noProperties": "Nessuna proprietà trovata."
+    }
+  }
+}

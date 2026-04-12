@@ -1,0 +1,42 @@
+{
+  "nav": {
+    "buy": "Buy",
+    "rent": "Rent",
+    "sell": "Sell",
+    "saved": "Saved Homes"
+  },
+  "hero": {
+    "find": "Find your ",
+    "sanctuary": "sanctuary",
+    "dot": "."
+  },
+  "search": {
+    "placeholder": "Search by city, neighborhood, or address...",
+    "button": "Search",
+    "filters": "Filters",
+    "types": {
+      "All": "All",
+      "House": "House",
+      "Apartment": "Apartment",
+      "Villa": "Villa",
+      "Penthouse": "Penthouse"
+    }
+  },
+  "home": {
+    "featured": {
+      "title": "Featured Collections",
+      "description": "Curated properties for the discerning eye.",
+      "viewAll": "View all"
+    },
+    "grid": {
+      "searchResults": "Search Results",
+      "newInMarket": "New in Market",
+      "showingMatches": "Showing properties matching",
+      "freshOpportunities": "Fresh opportunities added this week.",
+      "all": "All",
+      "buy": "Buy",
+      "rent": "Rent",
+      "noProperties": "No properties found."
+    }
+  }
+}
