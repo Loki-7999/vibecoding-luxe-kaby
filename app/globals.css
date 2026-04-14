@@ -1,12 +1,15 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-primary: #06f9d0;
+  --color-primary: #006655;
+  --color-primary-dark: #004d40;
   --color-background-light: #EEF6F6;
   --color-background-dark: #0f231f;
   --color-nordic-dark: #19322F;
   --color-nordic-muted: #5C706D;
   --color-mosque: #006655;
+  --color-accent: #D9ECC8;
+  --color-surface: #FFFFFF;
 
   --font-display: "SF Pro Display", "Inter", sans-serif;
   --font-sans: "SF Pro Display", "Inter", sans-serif;

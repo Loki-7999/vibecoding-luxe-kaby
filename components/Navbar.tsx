@@ -3,9 +3,43 @@
 import Link from "next/link";
 import LanguageSwitcher from "./LanguageSwitcher";
 import { useTranslation } from "@/components/providers/I18nProvider";
+import { useAuth } from "@/components/providers/AuthProvider";
 
 export default function Navbar() {
   const { t } = useTranslation();
+  const { user } = useAuth();
+  const identityData = user?.identities?.[0]?.identity_data as
+    | {
+        avatar_url?: string;
+        picture?: string;
+        name?: string;
+        full_name?: string;
+        user_name?: string;
+        preferred_username?: string;
+        login?: string;
+      }
+    | undefined;
+  const githubHandle =
+    identityData?.user_name ||
+    identityData?.preferred_username ||
+    identityData?.login ||
+    (user?.user_metadata?.user_name as string | undefined) ||
+    (user?.user_metadata?.preferred_username as string | undefined) ||
+    (user?.user_metadata?.login as string | undefined) ||
+    null;
+  const avatarUrl =
+    user?.user_metadata?.avatar_url ||
+    user?.user_metadata?.picture ||
+    user?.user_metadata?.avatar ||
+    identityData?.avatar_url ||
+    identityData?.picture ||
+    (githubHandle ? `https://avatars.githubusercontent.com/${githubHandle}` : null);
+  const avatarAlt =
+    user?.user_metadata?.full_name ||
+    user?.user_metadata?.name ||
+    identityData?.full_name ||
+    identityData?.name ||
+    "Profile";
 
   return (
     <nav className="sticky top-0 z-50 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md border-b border-nordic-dark/10 dark:border-white/5">
@@ -54,16 +88,27 @@ export default function Navbar() {
               <span className="material-icons">notifications_none</span>
               <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border-2 border-background-light dark:border-background-dark"></span>
             </button>
-            <button className="flex items-center gap-2 pl-2 border-l border-nordic-dark/10 dark:border-white/10 ml-2">
-              <div className="w-9 h-9 rounded-full bg-gray-200 overflow-hidden ring-2 ring-transparent hover:ring-mosque transition-all">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  alt="Profile"
-                  className="w-full h-full object-cover"
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuCAWhQZ663Bd08kmzjbOPmUk4UIxYooNONShMEFXLR-DtmVi6Oz-TiaY77SPwFk7g0OobkeZEOMvt6v29mSOD0Xm2g95WbBG3ZjWXmiABOUwGU0LOySRfVDo-JTXQ0-gtwjWxbmue0qDm91m-zEOEZwAW6iRFB1qC1bAU-wkjxm67Sbztq8w7srHkFT9bVEC86qG-FzhOBTomhAurNRmx9l8Yfqabk328NfdKuVLckgCdaPsNFE3yN65MeoRi05GA_gXIMwG4YDIeA"
-                />
-              </div>
-            </button>
+            <div className="flex items-center gap-2 pl-2 border-l border-nordic-dark/10 dark:border-white/10 ml-2">
+              {user ? (
+                <button className="flex items-center gap-2">
+                  <div className="w-9 h-9 rounded-full bg-gray-200 overflow-hidden ring-2 ring-transparent hover:ring-mosque transition-all flex items-center justify-center">
+                    {avatarUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img alt={avatarAlt} className="w-full h-full object-cover" src={avatarUrl} />
+                    ) : (
+                      <span className="material-icons text-nordic-dark/70">person</span>
+                    )}
+                  </div>
+                </button>
+              ) : (
+                <Link
+                  href="/login"
+                  className="px-4 py-2 rounded-lg bg-mosque text-white text-sm font-semibold hover:bg-primary-dark transition-colors shadow-soft"
+                >
+                  Login
+                </Link>
+              )}
+            </div>
           </div>
         </div>
       </div>
