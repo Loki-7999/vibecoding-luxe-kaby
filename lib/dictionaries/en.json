@@ -3,7 +3,11 @@
     "buy": "Buy",
     "rent": "Rent",
     "sell": "Sell",
-    "saved": "Saved Homes"
+    "saved": "Saved Homes",
+    "account": "Account",
+    "login": "Log in",
+    "logout": "Log out",
+    "loggingOut": "Logging out..."
   },
   "hero": {
     "find": "Find your ",

@@ -3,7 +3,11 @@
     "buy": "Compra",
     "rent": "Affitto",
     "sell": "Vendita",
-    "saved": "Salvati"
+    "saved": "Salvati",
+    "account": "Account",
+    "login": "Accedi",
+    "logout": "Esci",
+    "loggingOut": "Uscita in corso..."
   },
   "hero": {
     "find": "Trova il tuo ",
