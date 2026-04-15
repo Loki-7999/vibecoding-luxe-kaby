@@ -3,7 +3,11 @@
     "buy": "Acheter",
     "rent": "Louer",
     "sell": "Vendre",
-    "saved": "Sauvegardés"
+    "saved": "Sauvegardés",
+    "account": "Compte",
+    "login": "Se connecter",
+    "logout": "Se déconnecter",
+    "loggingOut": "Déconnexion..."
   },
   "hero": {
     "find": "Trouvez votre ",
