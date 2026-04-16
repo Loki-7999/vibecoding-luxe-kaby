@@ -34,3 +34,18 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Admin Setup
+
+1. Run the SQL migration in [supabase/migrations/20260415000000_create_admin_roles.sql](./supabase/migrations/20260415000000_create_admin_roles.sql).
+2. Promote your first administrator manually in Supabase SQL after that migration:
+
+```sql
+update public.user_roles
+set role = 'admin'
+where user_id = 'YOUR_AUTH_USER_ID';
+```
+
+3. Sign in with that account and open `/admin`.
+
+The admin area uses a Next 16 `proxy.ts` guard and requires the user to have the `admin` role in `public.user_roles`.

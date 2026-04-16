@@ -4,7 +4,11 @@ import { Property } from "@/lib/queries";
 interface PropertyCardProps {
   property: Property;
   className?: string;
-  dict?: any;
+  dict?: {
+    forRent?: string;
+    forSale?: string;
+    mo?: string;
+  };
 }
 
 export default function PropertyCard({ property, className = "", dict }: PropertyCardProps) {

@@ -4,7 +4,7 @@ import FeaturedPropertyCard from "@/components/FeaturedPropertyCard";
 import PropertyCard from "@/components/PropertyCard";
 import Pagination from "@/components/Pagination";
 import SearchAndFilters from "@/components/SearchAndFilters";
-import { getFeaturedProperties, getPaginatedProperties } from "@/lib/queries";
+import { getFeaturedProperties, getPaginatedProperties, type Property } from "@/lib/queries";
 import { getLocale, getDictionary } from "@/lib/i18n";
 
 interface HomePageProps {
@@ -66,7 +66,7 @@ export default async function Home({ searchParams }: HomePageProps) {
               </a>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {featured.map((property: any) => (
+              {featured.map((property: Property) => (
                 <FeaturedPropertyCard key={property.id} property={property} dict={dictionary.property} />
               ))}
             </div>
@@ -99,7 +99,7 @@ export default async function Home({ searchParams }: HomePageProps) {
 
           {properties.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {properties.map((property: any) => (
+              {properties.map((property: Property) => (
                 <PropertyCard key={property.id} property={property} dict={dictionary.property} />
               ))}
             </div>

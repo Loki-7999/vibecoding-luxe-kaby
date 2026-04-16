@@ -10,7 +10,7 @@ import { useAuth } from "@/components/providers/AuthProvider";
 export default function Navbar() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { user, signOut } = useAuth();
+  const { user, role, signOut } = useAuth();
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement | null>(null);
@@ -203,16 +203,29 @@ export default function Navbar() {
 
                     <div className="mt-3">
                       {user ? (
-                        <button
-                          className="w-full flex items-center justify-between rounded-2xl px-3 py-3 text-sm font-semibold text-nordic-dark dark:text-white hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-300 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-                          disabled={isSigningOut}
-                          onClick={handleSignOut}
-                          role="menuitem"
-                          type="button"
-                        >
-                          <span>{isSigningOut ? t("nav.loggingOut") : t("nav.logout")}</span>
-                          <span className="material-icons text-[18px]">logout</span>
-                        </button>
+                        <div className="space-y-1">
+                          {role === "admin" ? (
+                            <Link
+                              className="w-full flex items-center justify-between rounded-2xl px-3 py-3 text-sm font-semibold text-nordic-dark dark:text-white hover:bg-mosque/10 hover:text-mosque transition-colors"
+                              href="/admin/properties"
+                              onClick={() => setIsProfileMenuOpen(false)}
+                              role="menuitem"
+                            >
+                              <span>Admin dashboard</span>
+                              <span className="material-icons text-[18px]">shield</span>
+                            </Link>
+                          ) : null}
+                          <button
+                            className="w-full flex items-center justify-between rounded-2xl px-3 py-3 text-sm font-semibold text-nordic-dark dark:text-white hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-300 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                            disabled={isSigningOut}
+                            onClick={handleSignOut}
+                            role="menuitem"
+                            type="button"
+                          >
+                            <span>{isSigningOut ? t("nav.loggingOut") : t("nav.logout")}</span>
+                            <span className="material-icons text-[18px]">logout</span>
+                          </button>
+                        </div>
                       ) : (
                         <Link
                           className="w-full flex items-center justify-between rounded-2xl px-3 py-3 text-sm font-semibold text-nordic-dark dark:text-white hover:bg-mosque/10 hover:text-mosque transition-colors"
