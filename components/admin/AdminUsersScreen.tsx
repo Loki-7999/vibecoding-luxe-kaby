@@ -4,11 +4,15 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { APP_ROLES, getRoleLabel, type AdminUserRecord, type AppRole } from "@/lib/admin";
+import AdminProfileMenu from "@/components/admin/AdminProfileMenu";
 import {
+  ADMIN_PRIMARY_ACTION_BUTTON_CLASSNAME,
   formatAdminDate,
+  getPaginationItems,
   getRoleChipClass,
   getShortUserCode,
   getUserPresence,
+  paginateItems,
   useAdminIdentity,
 } from "@/components/admin/shared";
 
@@ -29,10 +33,11 @@ const ROLE_ICONS: Record<AppRole, string> = {
 };
 
 export default function AdminUsersScreen() {
-  const { avatarAlt, avatarUrl, displayName, email, user } = useAdminIdentity();
+  const { displayName, email, user } = useAdminIdentity();
   const [users, setUsers] = useState<AdminUserRecord[]>([]);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<UserFilter>("all");
+  const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [savingUserId, setSavingUserId] = useState<string | null>(null);
@@ -104,6 +109,14 @@ export default function AdminUsersScreen() {
         .some((value) => value!.toLowerCase().includes(normalizedSearch));
     });
   }, [filter, search, users]);
+  const paginatedUsers = useMemo(
+    () => paginateItems(filteredUsers, currentPage),
+    [currentPage, filteredUsers]
+  );
+  const paginationItems = useMemo(
+    () => getPaginationItems(paginatedUsers.currentPage, paginatedUsers.totalPages),
+    [paginatedUsers.currentPage, paginatedUsers.totalPages]
+  );
 
   const handleRoleChange = async (targetUserId: string, nextRole: AppRole) => {
     setSavingUserId(targetUserId);
@@ -129,7 +142,7 @@ export default function AdminUsersScreen() {
     setSavingUserId(null);
   };
 
-  const featuredUserId = filteredUsers[0]?.user_id ?? null;
+  const featuredUserId = paginatedUsers.pageItems[0]?.user_id ?? null;
 
   return (
     <div className="flex min-h-screen flex-col bg-background-light font-display text-nordic dark:bg-background-dark dark:text-gray-100 antialiased">
@@ -179,16 +192,7 @@ export default function AdminUsersScreen() {
               <span className="material-symbols-outlined text-xl">notifications</span>
               <span className="absolute right-0 top-0 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white" />
             </button>
-            <button className="ml-2 flex items-center gap-2" type="button">
-              <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full border border-nordic/10 bg-nordic/10">
-                {avatarUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img alt={avatarAlt} className="h-full w-full object-cover" src={avatarUrl} />
-                ) : (
-                  <span className="material-symbols-outlined text-lg text-nordic/60">person</span>
-                )}
-              </div>
-            </button>
+            <AdminProfileMenu />
           </div>
         </div>
       </nav>
@@ -213,17 +217,21 @@ export default function AdminUsersScreen() {
               </div>
               <input
                 className="block w-full rounded-lg border-none bg-white py-2.5 pl-10 pr-3 text-sm text-nordic shadow-soft placeholder-nordic/30 transition-all focus:bg-white focus:ring-2 focus:ring-primary dark:bg-gray-800 dark:text-white"
-                onChange={(event) => setSearch(event.target.value)}
+                onChange={(event) => {
+                  setSearch(event.target.value);
+                  setCurrentPage(1);
+                  setOpenMenuUserId(null);
+                }}
                 placeholder="Search by name, email..."
                 type="text"
                 value={search}
               />
             </div>
             <button
-              className="inline-flex items-center justify-center whitespace-nowrap rounded-lg border border-primary bg-transparent px-4 py-2.5 text-sm font-medium text-primary transition-colors hover:bg-primary/5 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+              className={ADMIN_PRIMARY_ACTION_BUTTON_CLASSNAME}
               type="button"
             >
-              <span className="material-icons mr-2 text-lg">add</span>
+              <span className="material-icons text-lg">add</span>
               Add User
             </button>
           </div>
@@ -238,7 +246,11 @@ export default function AdminUsersScreen() {
                   : "pb-3 text-sm font-medium text-nordic/60 transition-colors hover:text-nordic"
               }
               key={tab.value}
-              onClick={() => setFilter(tab.value)}
+              onClick={() => {
+                setFilter(tab.value);
+                setCurrentPage(1);
+                setOpenMenuUserId(null);
+              }}
               type="button"
             >
               {tab.label}
@@ -270,7 +282,7 @@ export default function AdminUsersScreen() {
             No users matched this search.
           </div>
         ) : (
-          filteredUsers.map((entry) => {
+          paginatedUsers.pageItems.map((entry) => {
             const presence = getUserPresence(entry.last_sign_in_at);
             const isCurrentUser = entry.user_id === user?.id;
             const isOpen = openMenuUserId === entry.user_id;
@@ -423,11 +435,11 @@ export default function AdminUsersScreen() {
               <p className="text-sm text-nordic/60 dark:text-gray-400">
                 Showing{" "}
                 <span className="font-medium text-nordic dark:text-white">
-                  {filteredUsers.length === 0 ? 0 : 1}
+                  {paginatedUsers.totalItems === 0 ? 0 : paginatedUsers.startIndex + 1}
                 </span>{" "}
                 to{" "}
                 <span className="font-medium text-nordic dark:text-white">
-                  {filteredUsers.length}
+                  {paginatedUsers.endIndex}
                 </span>{" "}
                 of{" "}
                 <span className="font-medium text-nordic dark:text-white">{users.length}</span> users
@@ -439,30 +451,44 @@ export default function AdminUsersScreen() {
                 className="relative z-0 inline-flex -space-x-px rounded-md shadow-none"
               >
                 <button
-                  className="relative inline-flex items-center rounded-l-md px-2 py-2 text-sm font-medium text-nordic/50 transition-colors hover:text-primary"
-                  disabled
+                  className="relative inline-flex items-center rounded-l-md px-2 py-2 text-sm font-medium text-nordic/50 transition-colors hover:text-primary disabled:cursor-not-allowed disabled:opacity-50"
+                  disabled={paginatedUsers.currentPage === 1}
+                  onClick={() => setCurrentPage((page) => Math.max(page - 1, 1))}
                   type="button"
                 >
                   <span className="sr-only">Previous</span>
                   <span className="material-icons text-xl">chevron_left</span>
                 </button>
+                {paginationItems.map((item, index) =>
+                  item === "..." ? (
+                    <span
+                      className="relative mx-1 inline-flex items-center px-1 text-sm font-medium text-nordic/40"
+                      key={`ellipsis-${index}`}
+                    >
+                      ...
+                    </span>
+                  ) : (
+                    <button
+                      aria-current={item === paginatedUsers.currentPage ? "page" : undefined}
+                      className={`relative mx-1 inline-flex items-center rounded-md px-4 py-2 text-sm font-medium transition-colors ${
+                        item === paginatedUsers.currentPage
+                          ? "z-10 bg-primary text-white shadow-sm"
+                          : "text-nordic/70 hover:bg-white hover:text-primary dark:hover:bg-gray-700"
+                      }`}
+                      key={item}
+                      onClick={() => setCurrentPage(item)}
+                      type="button"
+                    >
+                      {item}
+                    </button>
+                  )
+                )}
                 <button
-                  aria-current="page"
-                  className="relative z-10 mx-1 inline-flex items-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm"
-                  type="button"
-                >
-                  1
-                </button>
-                <button
-                  className="relative mx-1 inline-flex items-center rounded-md px-4 py-2 text-sm font-medium text-nordic/70 transition-colors hover:bg-white hover:text-primary"
-                  disabled
-                  type="button"
-                >
-                  2
-                </button>
-                <button
-                  className="relative inline-flex items-center rounded-r-md px-2 py-2 text-sm font-medium text-nordic/50 transition-colors hover:text-primary"
-                  disabled
+                  className="relative inline-flex items-center rounded-r-md px-2 py-2 text-sm font-medium text-nordic/50 transition-colors hover:text-primary disabled:cursor-not-allowed disabled:opacity-50"
+                  disabled={paginatedUsers.currentPage === paginatedUsers.totalPages}
+                  onClick={() =>
+                    setCurrentPage((page) => Math.min(page + 1, paginatedUsers.totalPages))
+                  }
                   type="button"
                 >
                   <span className="sr-only">Next</span>
@@ -474,15 +500,19 @@ export default function AdminUsersScreen() {
 
           <div className="flex w-full items-center justify-between sm:hidden">
             <button
-              className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-nordic hover:bg-gray-50"
-              disabled
+              className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-nordic hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={paginatedUsers.currentPage === 1}
+              onClick={() => setCurrentPage((page) => Math.max(page - 1, 1))}
               type="button"
             >
               Previous
             </button>
             <button
-              className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-nordic hover:bg-gray-50"
-              disabled
+              className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-nordic hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+              disabled={paginatedUsers.currentPage === paginatedUsers.totalPages}
+              onClick={() =>
+                setCurrentPage((page) => Math.min(page + 1, paginatedUsers.totalPages))
+              }
               type="button"
             >
               Next

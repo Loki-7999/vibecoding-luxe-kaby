@@ -4,6 +4,11 @@ import { useAuth } from "@/components/providers/AuthProvider";
 import type { AppRole } from "@/lib/admin";
 import type { Property } from "@/lib/queries";
 
+export const ADMIN_PAGE_SIZE = 5;
+
+export const ADMIN_PRIMARY_ACTION_BUTTON_CLASSNAME =
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white shadow-md shadow-primary/20 transition-all hover:-translate-y-0.5 hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60";
+
 type IdentityData = {
   avatar_url?: string;
   picture?: string;
@@ -160,4 +165,41 @@ export function getUserPresence(lastSignInAt: string | null) {
 
 export function getShortUserCode(userId: string) {
   return `#${userId.replace(/-/g, "").slice(0, 8).toUpperCase()}`;
+}
+
+export function clampPage(page: number, totalPages: number) {
+  return Math.min(Math.max(page, 1), Math.max(totalPages, 1));
+}
+
+export function paginateItems<T>(items: T[], page: number, pageSize = ADMIN_PAGE_SIZE) {
+  const totalItems = items.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  const currentPage = clampPage(page, totalPages);
+  const startIndex = totalItems === 0 ? 0 : (currentPage - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, totalItems);
+
+  return {
+    currentPage,
+    endIndex,
+    pageItems: items.slice(startIndex, endIndex),
+    startIndex,
+    totalItems,
+    totalPages,
+  };
+}
+
+export function getPaginationItems(currentPage: number, totalPages: number) {
+  if (totalPages <= 5) {
+    return Array.from({ length: totalPages }, (_, index) => index + 1);
+  }
+
+  if (currentPage <= 3) {
+    return [1, 2, 3, 4, "...", totalPages];
+  }
+
+  if (currentPage >= totalPages - 2) {
+    return [1, "...", totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+  }
+
+  return [1, "...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages];
 }

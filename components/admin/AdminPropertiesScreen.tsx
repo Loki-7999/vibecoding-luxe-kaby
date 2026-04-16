@@ -4,19 +4,22 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import type { Property } from "@/lib/queries";
+import AdminProfileMenu from "@/components/admin/AdminProfileMenu";
 import {
+  ADMIN_PRIMARY_ACTION_BUTTON_CLASSNAME,
   formatPropertyPrice,
+  getPaginationItems,
   getPropertySecondaryLabel,
   getPropertyStatus,
-  useAdminIdentity,
+  paginateItems,
 } from "@/components/admin/shared";
 
 const PROPERTY_SELECT =
   "id, slug, title, location, price, price_type, bedrooms, bathrooms, area, image_url, image_alt, gallery_urls, badge, featured, created_at, property_type";
 
 export default function AdminPropertiesScreen() {
-  const { avatarAlt, avatarUrl, displayName, role } = useAdminIdentity();
   const [properties, setProperties] = useState<Property[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -51,7 +54,14 @@ export default function AdminPropertiesScreen() {
     };
   }, []);
 
-  const visibleProperties = useMemo(() => properties.slice(0, 5), [properties]);
+  const paginatedProperties = useMemo(
+    () => paginateItems(properties, currentPage),
+    [currentPage, properties]
+  );
+  const paginationItems = useMemo(
+    () => getPaginationItems(paginatedProperties.currentPage, paginatedProperties.totalPages),
+    [paginatedProperties.currentPage, paginatedProperties.totalPages]
+  );
   const activeCount = useMemo(
     () => properties.filter((property) => getPropertyStatus(property).label === "Active").length,
     [properties]
@@ -107,26 +117,8 @@ export default function AdminPropertiesScreen() {
               >
                 <span className="material-icons text-xl">notifications_none</span>
               </button>
-
-              <div className="flex items-center gap-3 border-l border-gray-200 pl-4 dark:border-gray-700">
-                <div className="hidden flex-col items-end sm:flex">
-                  <span className="text-sm font-semibold text-nordic-dark dark:text-white">
-                    {displayName}
-                  </span>
-                  <span className="text-xs capitalize text-gray-500 dark:text-gray-400">
-                    {role ?? "viewer"}
-                  </span>
-                </div>
-                <div className="h-9 w-9 overflow-hidden rounded-full bg-gray-200 ring-2 ring-white dark:ring-primary/20">
-                  {avatarUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img alt={avatarAlt} className="h-full w-full object-cover" src={avatarUrl} />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center text-nordic-dark/60">
-                      <span className="material-icons text-lg">person</span>
-                    </div>
-                  )}
-                </div>
+              <div className="border-l border-gray-200 pl-4 dark:border-gray-700">
+                <AdminProfileMenu />
               </div>
             </div>
           </div>
@@ -152,7 +144,7 @@ export default function AdminPropertiesScreen() {
               Filter
             </button>
             <button
-              className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-white shadow-md shadow-primary/20 transition-all hover:-translate-y-0.5 hover:bg-primary/90"
+              className={ADMIN_PRIMARY_ACTION_BUTTON_CLASSNAME}
               type="button"
             >
               <span className="material-icons text-base">add</span>
@@ -215,18 +207,18 @@ export default function AdminPropertiesScreen() {
             <div className="px-6 py-10 text-sm text-gray-500 dark:text-gray-400">
               Loading properties...
             </div>
-          ) : visibleProperties.length === 0 ? (
+          ) : paginatedProperties.pageItems.length === 0 ? (
             <div className="px-6 py-10 text-sm text-gray-500 dark:text-gray-400">
               No properties available yet.
             </div>
           ) : (
-            visibleProperties.map((property, index) => {
+            paginatedProperties.pageItems.map((property, index) => {
               const status = getPropertyStatus(property);
 
               return (
                 <div
                   className={`group grid grid-cols-1 items-center gap-4 px-6 py-5 transition-colors hover:bg-background-light dark:hover:bg-primary/5 md:grid-cols-12 ${
-                    index < visibleProperties.length - 1
+                    index < paginatedProperties.pageItems.length - 1
                       ? "border-b border-gray-100 dark:border-primary/10"
                       : ""
                   }`}
@@ -312,11 +304,11 @@ export default function AdminPropertiesScreen() {
             <div className="text-sm text-gray-500 dark:text-gray-400">
               Showing{" "}
               <span className="font-medium text-nordic-dark dark:text-white">
-                {visibleProperties.length === 0 ? 0 : 1}
+                {paginatedProperties.totalItems === 0 ? 0 : paginatedProperties.startIndex + 1}
               </span>{" "}
               to{" "}
               <span className="font-medium text-nordic-dark dark:text-white">
-                {visibleProperties.length}
+                {paginatedProperties.endIndex}
               </span>{" "}
               of{" "}
               <span className="font-medium text-nordic-dark dark:text-white">{properties.length}</span>{" "}
@@ -324,15 +316,43 @@ export default function AdminPropertiesScreen() {
             </div>
             <div className="flex gap-2">
               <button
-                className="rounded-md border border-gray-200 px-3 py-1 text-sm text-gray-600 opacity-50 dark:border-primary/30 dark:text-gray-300"
-                disabled
+                className="rounded-md border border-gray-200 px-3 py-1 text-sm text-gray-600 transition-colors hover:border-primary/40 hover:text-primary disabled:cursor-not-allowed disabled:opacity-50 dark:border-primary/30 dark:text-gray-300"
+                disabled={paginatedProperties.currentPage === 1}
+                onClick={() => setCurrentPage((page) => Math.max(page - 1, 1))}
                 type="button"
               >
                 Previous
               </button>
+              {paginationItems.map((item, index) =>
+                item === "..." ? (
+                  <span
+                    className="flex items-center px-1 text-sm text-gray-400 dark:text-gray-500"
+                    key={`ellipsis-${index}`}
+                  >
+                    ...
+                  </span>
+                ) : (
+                  <button
+                    aria-current={item === paginatedProperties.currentPage ? "page" : undefined}
+                    className={`rounded-md px-3 py-1 text-sm font-medium transition-colors ${
+                      item === paginatedProperties.currentPage
+                        ? "bg-primary text-white shadow-sm"
+                        : "border border-gray-200 text-gray-600 hover:border-primary/40 hover:text-primary dark:border-primary/30 dark:text-gray-300"
+                    }`}
+                    key={item}
+                    onClick={() => setCurrentPage(item)}
+                    type="button"
+                  >
+                    {item}
+                  </button>
+                )
+              )}
               <button
-                className="rounded-md border border-gray-200 px-3 py-1 text-sm text-gray-600 opacity-50 dark:border-primary/30 dark:text-gray-300"
-                disabled
+                className="rounded-md border border-gray-200 px-3 py-1 text-sm text-gray-600 transition-colors hover:border-primary/40 hover:text-primary disabled:cursor-not-allowed disabled:opacity-50 dark:border-primary/30 dark:text-gray-300"
+                disabled={paginatedProperties.currentPage === paginatedProperties.totalPages}
+                onClick={() =>
+                  setCurrentPage((page) => Math.min(page + 1, paginatedProperties.totalPages))
+                }
                 type="button"
               >
                 Next
