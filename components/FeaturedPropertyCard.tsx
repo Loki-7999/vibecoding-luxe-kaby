@@ -3,7 +3,10 @@ import { Property } from "@/lib/queries";
 
 interface FeaturedPropertyCardProps {
   property: Property;
-  dict?: any;
+  dict?: {
+    bedsShort?: string;
+    bathsShort?: string;
+  };
 }
 
 export default function FeaturedPropertyCard({ property, dict }: FeaturedPropertyCardProps) {

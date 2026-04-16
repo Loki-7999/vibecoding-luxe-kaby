@@ -20,9 +20,16 @@ export default function LanguageSwitcher() {
   const currentLang = languages.find((l) => l.code === locale) || languages[0];
 
   const handleLanguageChange = (code: string) => {
-    document.cookie = `luxe_locale=${code}; path=/; max-age=31536000`; // 1 year
-    setIsOpen(false);
-    router.refresh();
+    fetch("/api/locale", {
+      method: "POST",
+      body: JSON.stringify({ locale: code }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }).then(() => {
+      setIsOpen(false);
+      router.refresh();
+    });
   };
 
   useEffect(() => {
