@@ -18,6 +18,7 @@ import {
 import { getRoleLabel } from "@/lib/admin";
 import type { Property } from "@/lib/queries";
 import { supabase } from "@/lib/supabase";
+import MapClientWrapper from "@/components/MapClientWrapper";
 import { useAdminIdentity } from "@/components/admin/shared";
 
 type AdminPropertyFormScreenProps = {
@@ -104,6 +105,14 @@ function modeLabel(status: PropertyStatusValue, isDraft: boolean) {
   return getStatusCopy(status);
 }
 
+function isValidLatitude(value: number) {
+  return Number.isFinite(value) && value >= -90 && value <= 90;
+}
+
+function isValidLongitude(value: number) {
+  return Number.isFinite(value) && value >= -180 && value <= 180;
+}
+
 export default function AdminPropertyFormScreen({
   propertyId,
 }: AdminPropertyFormScreenProps) {
@@ -176,6 +185,15 @@ export default function AdminPropertyFormScreen({
   const pageDescription = isEditMode
     ? "Update the listing details below and keep the property information current."
     : "Fill in the details below to create a new listing. Fields marked with * are mandatory.";
+  const hasAnyCoordinate = formValues.latitude !== "" || formValues.longitude !== "";
+  const hasLocationCoordinates = formValues.latitude !== "" && formValues.longitude !== "";
+  const previewLatitude = hasLocationCoordinates ? Number(formValues.latitude) : undefined;
+  const previewLongitude = hasLocationCoordinates ? Number(formValues.longitude) : undefined;
+  const hasValidLocationCoordinates =
+    previewLatitude != null &&
+    previewLongitude != null &&
+    isValidLatitude(previewLatitude) &&
+    isValidLongitude(previewLongitude);
 
   const setFieldValue = <K extends keyof PropertyFormValues>(
     key: K,
@@ -328,6 +346,16 @@ export default function AdminPropertyFormScreen({
 
       if (!formValues.area || Number(formValues.area) <= 0) {
         throw new Error("Please enter a valid property area.");
+      }
+
+      if (hasAnyCoordinate && !hasLocationCoordinates) {
+        throw new Error("Enter both latitude and longitude, or leave both fields empty.");
+      }
+
+      if (hasLocationCoordinates && !hasValidLocationCoordinates) {
+        throw new Error(
+          "Latitude must be between -90 and 90, and longitude must be between -180 and 180."
+        );
       }
 
       if (galleryItems.length === 0) {
@@ -866,6 +894,8 @@ export default function AdminPropertyFormScreen({
                         id="latitude"
                         onChange={(event) => setFieldValue("latitude", event.target.value)}
                         placeholder="e.g. 19.432608"
+                        min={-90}
+                        max={90}
                         step="any"
                         type="number"
                         value={formValues.latitude}
@@ -883,25 +913,55 @@ export default function AdminPropertyFormScreen({
                         id="longitude"
                         onChange={(event) => setFieldValue("longitude", event.target.value)}
                         placeholder="e.g. -99.133209"
+                        min={-180}
+                        max={180}
                         step="any"
                         type="number"
                         value={formValues.longitude}
                       />
                     </div>
                   </div>
-                  <div className="group relative h-48 w-full overflow-hidden rounded-lg border border-gray-200 bg-gray-100">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      alt="Map view of city streets"
-                      className="h-full w-full object-cover opacity-80 transition-all duration-500 group-hover:opacity-100"
-                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuAS55FY7gfArnlTpNsdabJk9nBO5uQJgOwIsl8beO34JRZ9dMmjLoIkTuTUO72Y9L5tUmQqTReQWebUWadAWwLusGmRQiIict5sqY--yRaOxuYpTzfR4vv4RKh1ex6oxY64e0kbSeMudNO6pv-gG0WzVWs-pDfvQm5IoTQ1mT-tAV49LDkXAHZl317M1-D7eZw3N8o2ExKWTgg6oMAXOFVnkApIqnb7TZHekwSw8pWQxpJV2EKI8EQKQbQXJaSbjN8gB1n8b-ueWj8"
-                    />
-                    <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                      <span className="font-sf-pro flex items-center gap-1 rounded bg-white/90 px-3 py-1.5 text-xs font-bold text-nordic-dark shadow-sm backdrop-blur-sm">
-                        <span className="material-icons text-sm text-mosque">map</span>
-                        Preview
-                      </span>
+                  {hasAnyCoordinate && !hasValidLocationCoordinates ? (
+                    <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2">
+                      <p className="font-sf-pro text-xs text-amber-700">
+                        Use geographic coordinates. Latitude must be between `-90` and `90`;
+                        longitude between `-180` and `180`.
+                      </p>
                     </div>
+                  ) : null}
+                  <div className="group relative h-48 w-full overflow-hidden rounded-lg border border-gray-200 bg-gray-100">
+                    {hasValidLocationCoordinates ? (
+                      <>
+                        <MapClientWrapper
+                          latitude={previewLatitude}
+                          location={formValues.location}
+                          longitude={previewLongitude}
+                          variant="admin-preview"
+                        />
+                        <div className="pointer-events-none absolute left-3 top-3">
+                          <span className="font-sf-pro flex items-center gap-1 rounded bg-white/90 px-3 py-1.5 text-xs font-bold text-nordic-dark shadow-sm backdrop-blur-sm">
+                            <span className="material-icons text-sm text-mosque">map</span>
+                            Leaflet Preview
+                          </span>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-gradient-to-br from-gray-50 to-accent/30 px-4 text-center">
+                        <span className="material-icons text-4xl text-mosque/70">map</span>
+                        <div>
+                          <p className="font-sf-pro text-sm font-semibold text-nordic-dark">
+                            {hasAnyCoordinate
+                              ? "Coordinates are out of range"
+                              : "Add latitude and longitude"}
+                          </p>
+                          <p className="font-sf-pro mt-1 text-xs text-gray-500">
+                            {hasAnyCoordinate
+                              ? "Enter valid geographic coordinates to display the Leaflet map preview."
+                              : "The Leaflet map preview will appear once both coordinates are filled in."}
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
