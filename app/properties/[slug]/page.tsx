@@ -171,7 +171,7 @@ export default async function PropertyDetailsPage({
                 </div>
                 <div className="flex flex-col items-center justify-center p-4 bg-mosque/5 rounded-lg border border-mosque/10">
                   <span className="material-icons text-mosque text-2xl mb-2">directions_car</span>
-                  <span className="text-xl font-bold text-nordic">2</span>
+                  <span className="text-xl font-bold text-nordic">{property.parking ?? 0}</span>
                   <span className="text-xs uppercase tracking-wider text-nordic/50">{t.garage}</span>
                 </div>
               </div>
@@ -180,13 +180,19 @@ export default async function PropertyDetailsPage({
             <div className="bg-white p-8 rounded-xl shadow-sm border border-mosque/5">
               <h2 className="text-lg font-semibold mb-4 text-nordic">{t.about}</h2>
               <div className="prose prose-slate max-w-none text-nordic/70 leading-relaxed">
-                <p className="mb-4">
-                  Experience modern luxury in {property.title}, strategically positioned in {property.location}. 
-                  Designed with an emphasis on indoor-outdoor living, the residence features incredible layouts.
-                </p>
-                <p>
-                  The open-concept kitchen is equipped with top-of-the-line appliances and custom cabinetry, perfect for culinary enthusiasts. Retreat to the primary suite, a sanctuary of relaxation with a spa-inspired bath and gorgeous views.
-                </p>
+                {property.description ? (
+                  <p className="whitespace-pre-line">{property.description}</p>
+                ) : (
+                  <>
+                    <p className="mb-4">
+                      Experience modern luxury in {property.title}, strategically positioned in {property.location}. 
+                      Designed with an emphasis on indoor-outdoor living, the residence features incredible layouts.
+                    </p>
+                    <p>
+                      The open-concept kitchen is equipped with top-of-the-line appliances and custom cabinetry, perfect for culinary enthusiasts. Retreat to the primary suite, a sanctuary of relaxation with a spa-inspired bath and gorgeous views.
+                    </p>
+                  </>
+                )}
               </div>
               <button className="mt-4 text-mosque font-semibold text-sm flex items-center gap-1 hover:gap-2 transition-all">
                 {t.readMore}
@@ -197,30 +203,15 @@ export default async function PropertyDetailsPage({
             <div className="bg-white p-8 rounded-xl shadow-sm border border-mosque/5">
               <h2 className="text-lg font-semibold mb-6 text-nordic">{t.amenities}</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8">
-                <div className="flex items-center gap-3 text-nordic/70">
-                  <span className="material-icons text-mosque/60 text-sm">check_circle</span>
-                  <span>{t.smartHome}</span>
-                </div>
-                <div className="flex items-center gap-3 text-nordic/70">
-                  <span className="material-icons text-mosque/60 text-sm">check_circle</span>
-                  <span>{t.pool}</span>
-                </div>
-                <div className="flex items-center gap-3 text-nordic/70">
-                  <span className="material-icons text-mosque/60 text-sm">check_circle</span>
-                  <span>{t.heating}</span>
-                </div>
-                <div className="flex items-center gap-3 text-nordic/70">
-                  <span className="material-icons text-mosque/60 text-sm">check_circle</span>
-                  <span>{t.ev}</span>
-                </div>
-                <div className="flex items-center gap-3 text-nordic/70">
-                  <span className="material-icons text-mosque/60 text-sm">check_circle</span>
-                  <span>{t.gym}</span>
-                </div>
-                <div className="flex items-center gap-3 text-nordic/70">
-                  <span className="material-icons text-mosque/60 text-sm">check_circle</span>
-                  <span>{t.wineCellar}</span>
-                </div>
+                {(property.amenities?.length
+                  ? property.amenities
+                  : [t.smartHome, t.pool, t.heating, t.ev, t.gym, t.wineCellar]
+                ).map((amenity) => (
+                  <div className="flex items-center gap-3 text-nordic/70" key={amenity}>
+                    <span className="material-icons text-mosque/60 text-sm">check_circle</span>
+                    <span>{amenity}</span>
+                  </div>
+                ))}
               </div>
             </div>
 

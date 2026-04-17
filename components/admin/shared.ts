@@ -83,6 +83,15 @@ export function formatPropertyPrice(value: number) {
 }
 
 export function getPropertyStatus(property: Property) {
+  if (property.is_draft) {
+    return {
+      dotClassName: "bg-slate-400",
+      label: "Draft",
+      pillClassName:
+        "bg-slate-100 text-slate-700 border border-slate-200 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700",
+    };
+  }
+
   const badge = (property.badge ?? "").toLowerCase();
 
   if (badge.includes("sold")) {

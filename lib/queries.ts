@@ -5,17 +5,23 @@ export interface Property {
   slug: string;
   title: string;
   location: string;
+  description?: string | null;
   price: number;
   price_type: 'sale' | 'rent';
   bedrooms: number;
   bathrooms: number;
   area: number;
+  year_built?: number | null;
+  parking?: number | null;
   image_url: string;
   image_alt: string;
   gallery_urls?: string[];
+  amenities?: string[];
   badge?: string | null;
   featured: boolean;
+  is_draft?: boolean;
   created_at: string;
+  updated_at?: string;
   property_type?: string;
 }
 
@@ -27,6 +33,10 @@ export interface PaginatedProperties {
 }
 
 const ITEMS_PER_PAGE = 8;
+
+function filterVisibleProperties(properties: Property[]) {
+  return properties.filter((property) => property.is_draft !== true);
+}
 
 export async function getFeaturedProperties(): Promise<Property[]> {
   const { data, error } = await supabase
@@ -40,42 +50,51 @@ export async function getFeaturedProperties(): Promise<Property[]> {
     console.error('Error fetching featured properties:', error);
     return [];
   }
-  return data as Property[];
+  return filterVisibleProperties((data as Property[]) ?? []);
 }
 
 export async function getPaginatedProperties(page: number = 1, searchQuery?: string, type?: string): Promise<PaginatedProperties> {
-  const from = (page - 1) * ITEMS_PER_PAGE;
-  const to = from + ITEMS_PER_PAGE - 1;
-
-  let query = supabase
+  const { data, error } = await supabase
     .from('properties')
-    .select('*', { count: 'exact' })
-    .order('created_at', { ascending: true })
-    .range(from, to);
-
-  if (searchQuery) {
-    const primaryTerm = searchQuery.split(',')[0].trim().replace(/[^a-zA-Z0-9 ]/g, ''); // Extract main term
-    query = query.or(`title.ilike.%${primaryTerm}%,location.ilike.%${primaryTerm}%`);
-  } else {
-    query = query.eq('featured', false); // Only exclude featured items when NOT searching
-  }
-
-  if (type && type !== 'All') {
-    query = query.eq('property_type', type);
-  }
-
-  const { data, error, count } = await query;
+    .select('*')
+    .order('created_at', { ascending: true });
 
   if (error) {
     console.error('Error fetching properties:', error);
     return { properties: [], total: 0, page, totalPages: 0 };
   }
 
-  const total = count ?? 0;
+  const primaryTerm = searchQuery
+    ? searchQuery.split(',')[0].trim().replace(/[^a-zA-Z0-9 ]/g, '').toLowerCase()
+    : '';
+
+  const filtered = filterVisibleProperties((data as Property[]) ?? []).filter((property) => {
+    if (!searchQuery && property.featured) {
+      return false;
+    }
+
+    if (
+      primaryTerm &&
+      !property.title.toLowerCase().includes(primaryTerm) &&
+      !property.location.toLowerCase().includes(primaryTerm)
+    ) {
+      return false;
+    }
+
+    if (type && type !== 'All' && property.property_type !== type) {
+      return false;
+    }
+
+    return true;
+  });
+
+  const total = filtered.length;
   const totalPages = Math.ceil(total / ITEMS_PER_PAGE);
+  const from = (page - 1) * ITEMS_PER_PAGE;
+  const to = from + ITEMS_PER_PAGE;
 
   return {
-    properties: data as Property[],
+    properties: filtered.slice(from, to),
     total,
     page,
     totalPages,
@@ -95,5 +114,6 @@ export async function getPropertyBySlug(slug: string): Promise<Property | null> 
     }
     return null;
   }
-  return data as Property;
+  const property = data as Property;
+  return property.is_draft ? null : property;
 }

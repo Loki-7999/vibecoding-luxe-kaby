@@ -19,6 +19,14 @@
 }
 
 @layer utilities {
+  .font-sf-pro {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  .font-newsreader {
+    font-family: "Newsreader", serif;
+  }
+
   .hide-scroll::-webkit-scrollbar {
     display: none;
   }
