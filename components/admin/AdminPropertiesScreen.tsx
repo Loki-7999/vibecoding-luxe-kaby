@@ -14,9 +14,6 @@ import {
   paginateItems,
 } from "@/components/admin/shared";
 
-const PROPERTY_SELECT =
-  "id, slug, title, location, price, price_type, bedrooms, bathrooms, area, image_url, image_alt, gallery_urls, badge, featured, created_at, property_type";
-
 export default function AdminPropertiesScreen() {
   const [properties, setProperties] = useState<Property[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -32,7 +29,7 @@ export default function AdminPropertiesScreen() {
 
       const { data, error: propertiesError } = await supabase
         .from("properties")
-        .select(PROPERTY_SELECT)
+        .select("*")
         .order("created_at", { ascending: false });
 
       if (!isActive) return;
@@ -143,13 +140,10 @@ export default function AdminPropertiesScreen() {
               <span className="material-icons text-base">filter_list</span>
               Filter
             </button>
-            <button
-              className={ADMIN_PRIMARY_ACTION_BUTTON_CLASSNAME}
-              type="button"
-            >
+            <Link className={ADMIN_PRIMARY_ACTION_BUTTON_CLASSNAME} href="/admin/properties/new">
               <span className="material-icons text-base">add</span>
               Add New Property
-            </button>
+            </Link>
           </div>
         </div>
 
@@ -280,13 +274,13 @@ export default function AdminPropertiesScreen() {
                   </div>
 
                   <div className="col-span-12 flex items-center justify-end gap-2 md:col-span-2">
-                    <button
+                    <Link
                       className="rounded-lg p-2 text-gray-400 transition-all hover:bg-accent/30 hover:text-primary"
+                      href={`/admin/properties/${property.id}/edit`}
                       title="Edit Property"
-                      type="button"
                     >
                       <span className="material-icons text-xl">edit</span>
-                    </button>
+                    </Link>
                     <button
                       className="rounded-lg p-2 text-gray-400 transition-all hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20"
                       title="Delete Property"
