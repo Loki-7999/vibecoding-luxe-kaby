@@ -105,6 +105,10 @@ function modeLabel(status: PropertyStatusValue, isDraft: boolean) {
   return getStatusCopy(status);
 }
 
+function getVisibilityCopy(isActive: boolean) {
+  return isActive ? "Active in public catalog" : "Inactive in public catalog";
+}
+
 function isValidLatitude(value: number) {
   return Number.isFinite(value) && value >= -90 && value <= 90;
 }
@@ -185,6 +189,7 @@ export default function AdminPropertyFormScreen({
   const pageDescription = isEditMode
     ? "Update the listing details below and keep the property information current."
     : "Fill in the details below to create a new listing. Fields marked with * are mandatory.";
+  const propertyIsActive = loadedProperty?.is_active ?? true;
   const hasAnyCoordinate = formValues.latitude !== "" || formValues.longitude !== "";
   const hasLocationCoordinates = formValues.latitude !== "" && formValues.longitude !== "";
   const previewLatitude = hasLocationCoordinates ? Number(formValues.latitude) : undefined;
@@ -1102,6 +1107,25 @@ export default function AdminPropertyFormScreen({
                     </p>
                     <p className="font-sf-pro mt-1 text-sm font-semibold text-nordic-dark">
                       {modeLabel(formValues.status, loadedProperty?.is_draft ?? false)}
+                    </p>
+                  </div>
+
+                  <div
+                    className={`rounded-lg px-4 py-3 ${
+                      propertyIsActive
+                        ? "border border-emerald-200 bg-emerald-50"
+                        : "border border-rose-200 bg-rose-50"
+                    }`}
+                  >
+                    <p className="font-sf-pro text-xs uppercase tracking-[0.2em] text-gray-500">
+                      Visibility
+                    </p>
+                    <p className="font-sf-pro mt-1 text-sm font-semibold text-nordic-dark">
+                      {getVisibilityCopy(propertyIsActive)}
+                    </p>
+                    <p className="font-sf-pro mt-1 text-xs text-gray-500">
+                      Use the Listings screen to deactivate or reactivate this property without
+                      deleting it from the database.
                     </p>
                   </div>
                 </div>

@@ -18,7 +18,9 @@ export default function AdminPropertiesScreen() {
   const [properties, setProperties] = useState<Property[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [isTogglingPropertyId, setIsTogglingPropertyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   useEffect(() => {
     let isActive = true;
@@ -26,6 +28,7 @@ export default function AdminPropertiesScreen() {
     const loadProperties = async () => {
       setLoading(true);
       setError(null);
+      setSuccessMessage(null);
 
       const { data, error: propertiesError } = await supabase
         .from("properties")
@@ -63,10 +66,43 @@ export default function AdminPropertiesScreen() {
     () => properties.filter((property) => getPropertyStatus(property).label === "Active").length,
     [properties]
   );
-  const pendingCount = useMemo(
-    () => properties.filter((property) => getPropertyStatus(property).label === "Pending").length,
+  const inactiveCount = useMemo(
+    () => properties.filter((property) => property.is_active === false).length,
     [properties]
   );
+
+  const handleTogglePropertyActive = async (property: Property) => {
+    const nextIsActive = property.is_active === false;
+
+    setIsTogglingPropertyId(property.id);
+    setError(null);
+    setSuccessMessage(null);
+
+    const { data, error: updateError } = await supabase
+      .from("properties")
+      .update({ is_active: nextIsActive })
+      .eq("id", property.id)
+      .select("*")
+      .single();
+
+    if (updateError) {
+      setError(updateError.message);
+      setIsTogglingPropertyId(null);
+      return;
+    }
+
+    const updatedProperty = data as Property;
+
+    setProperties((current) =>
+      current.map((item) => (item.id === updatedProperty.id ? updatedProperty : item))
+    );
+    setSuccessMessage(
+      nextIsActive
+        ? "Property reactivated and visible in the public catalog again."
+        : "Property deactivated and hidden from home, search, and public detail pages."
+    );
+    setIsTogglingPropertyId(null);
+  };
 
   return (
     <div className="min-h-screen bg-background-light text-nordic-dark dark:bg-background-dark dark:text-gray-100">
@@ -174,11 +210,15 @@ export default function AdminPropertiesScreen() {
 
           <div className="flex items-center justify-between rounded-xl border border-primary/10 bg-white p-5 shadow-sm dark:bg-[#152e2a]">
             <div>
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Pending Sale</p>
-              <p className="mt-1 text-2xl font-bold text-nordic-dark dark:text-white">{pendingCount}</p>
+              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                Inactive Properties
+              </p>
+              <p className="mt-1 text-2xl font-bold text-nordic-dark dark:text-white">
+                {inactiveCount}
+              </p>
             </div>
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400">
-              <span className="material-icons">pending</span>
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-300">
+              <span className="material-icons">visibility_off</span>
             </div>
           </div>
         </div>
@@ -186,6 +226,12 @@ export default function AdminPropertiesScreen() {
         {error ? (
           <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-200">
             {error}
+          </div>
+        ) : null}
+
+        {successMessage ? (
+          <div className="mb-6 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-200">
+            {successMessage}
           </div>
         ) : null}
 
@@ -208,6 +254,13 @@ export default function AdminPropertiesScreen() {
           ) : (
             paginatedProperties.pageItems.map((property, index) => {
               const status = getPropertyStatus(property);
+              const isInactive = property.is_active === false;
+              const titleHref =
+                isInactive || property.is_draft
+                  ? `/admin/properties/${property.id}/edit`
+                  : `/properties/${property.slug}`;
+              const toggleLabel = isInactive ? "Reactivate Property" : "Deactivate Property";
+              const isBusy = isTogglingPropertyId === property.id;
 
               return (
                 <div
@@ -215,7 +268,7 @@ export default function AdminPropertiesScreen() {
                     index < paginatedProperties.pageItems.length - 1
                       ? "border-b border-gray-100 dark:border-primary/10"
                       : ""
-                  }`}
+                  } ${isInactive ? "bg-rose-50/40 dark:bg-rose-950/10" : ""}`}
                   key={property.id}
                 >
                   <div className="col-span-12 flex items-center gap-4 md:col-span-6">
@@ -236,11 +289,16 @@ export default function AdminPropertiesScreen() {
                     <div>
                       <Link
                         className="cursor-pointer text-lg font-bold text-nordic-dark transition-colors group-hover:text-primary dark:text-white"
-                        href={`/properties/${property.slug}`}
+                        href={titleHref}
                       >
                         {property.title}
                       </Link>
                       <p className="text-sm text-gray-500 dark:text-gray-400">{property.location}</p>
+                      {isInactive ? (
+                        <p className="mt-1 text-xs font-medium text-rose-600 dark:text-rose-300">
+                          Hidden from the public catalog. Edit anytime from admin.
+                        </p>
+                      ) : null}
                       <div className="mt-1.5 flex flex-wrap items-center gap-3 text-xs text-gray-400 dark:text-gray-500">
                         <span className="flex items-center gap-1">
                           <span className="material-icons text-[14px]">bed</span>
@@ -282,11 +340,23 @@ export default function AdminPropertiesScreen() {
                       <span className="material-icons text-xl">edit</span>
                     </Link>
                     <button
-                      className="rounded-lg p-2 text-gray-400 transition-all hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20"
-                      title="Delete Property"
+                      className={`rounded-lg p-2 transition-all ${
+                        isInactive
+                          ? "text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
+                          : "text-gray-400 hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-900/20"
+                      }`}
+                      disabled={isBusy}
+                      onClick={() => void handleTogglePropertyActive(property)}
+                      title={toggleLabel}
                       type="button"
                     >
-                      <span className="material-icons text-xl">delete_outline</span>
+                      <span className="material-icons text-xl">
+                        {isBusy
+                          ? "hourglass_top"
+                          : isInactive
+                            ? "visibility"
+                            : "visibility_off"}
+                      </span>
                     </button>
                   </div>
                 </div>

@@ -21,6 +21,7 @@ export interface Property {
   amenities?: string[];
   badge?: string | null;
   featured: boolean;
+  is_active?: boolean;
   is_draft?: boolean;
   created_at: string;
   updated_at?: string;
@@ -37,7 +38,9 @@ export interface PaginatedProperties {
 const ITEMS_PER_PAGE = 8;
 
 function filterVisibleProperties(properties: Property[]) {
-  return properties.filter((property) => property.is_draft !== true);
+  return properties.filter(
+    (property) => property.is_active !== false && property.is_draft !== true
+  );
 }
 
 export async function getFeaturedProperties(): Promise<Property[]> {
@@ -117,5 +120,5 @@ export async function getPropertyBySlug(slug: string): Promise<Property | null> 
     return null;
   }
   const property = data as Property;
-  return property.is_draft ? null : property;
+  return filterVisibleProperties([property])[0] ?? null;
 }

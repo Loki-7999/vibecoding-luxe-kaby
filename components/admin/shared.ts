@@ -83,6 +83,15 @@ export function formatPropertyPrice(value: number) {
 }
 
 export function getPropertyStatus(property: Property) {
+  if (property.is_active === false) {
+    return {
+      dotClassName: "bg-rose-500",
+      label: "Inactive",
+      pillClassName:
+        "bg-rose-100 text-rose-700 border border-rose-200 dark:bg-rose-900/30 dark:text-rose-200 dark:border-rose-800",
+    };
+  }
+
   if (property.is_draft) {
     return {
       dotClassName: "bg-slate-400",
@@ -120,6 +129,10 @@ export function getPropertyStatus(property: Property) {
 }
 
 export function getPropertySecondaryLabel(property: Property) {
+  if (property.is_active === false) {
+    return "Hidden from public catalog";
+  }
+
   if (property.price_type === "rent") {
     return `Monthly: ${formatPropertyPrice(property.price)}`;
   }

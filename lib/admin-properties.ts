@@ -23,6 +23,7 @@ export const PROPERTY_FORM_SELECT = [
   "amenities",
   "badge",
   "featured",
+  "is_active",
   "is_draft",
   "created_at",
   "updated_at",
