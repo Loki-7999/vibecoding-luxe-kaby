@@ -7,6 +7,8 @@ export const PROPERTY_FORM_SELECT = [
   "slug",
   "title",
   "location",
+  "latitude",
+  "longitude",
   "description",
   "price",
   "price_type",
@@ -47,6 +49,8 @@ export type PropertyStatusValue = "sale" | "rent" | "pending" | "sold";
 export type PropertyFormValues = {
   title: string;
   location: string;
+  latitude: string;
+  longitude: string;
   description: string;
   price: string;
   status: PropertyStatusValue;
@@ -68,7 +72,9 @@ export function getDefaultPropertyFormValues(): PropertyFormValues {
     bedrooms: 3,
     description: "",
     featured: false,
+    latitude: "",
     location: "",
+    longitude: "",
     parking: 1,
     price: "",
     propertyType: "House",
@@ -116,7 +122,9 @@ export function propertyToFormValues(property: Property): PropertyFormValues {
     bedrooms: Number(property.bedrooms ?? 0),
     description: property.description ?? "",
     featured: Boolean(property.featured),
+    latitude: property.latitude != null ? String(property.latitude) : "",
     location: property.location ?? "",
+    longitude: property.longitude != null ? String(property.longitude) : "",
     parking: Number(property.parking ?? 0),
     price: property.price ? String(property.price) : "",
     propertyType: property.property_type ?? "House",

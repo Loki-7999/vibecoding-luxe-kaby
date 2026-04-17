@@ -5,6 +5,8 @@ export interface Property {
   slug: string;
   title: string;
   location: string;
+  latitude?: number | null;
+  longitude?: number | null;
   description?: string | null;
   price: number;
   price_type: 'sale' | 'rent';

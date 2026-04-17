@@ -5,13 +5,24 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { useSyncExternalStore } from "react";
 
-export default function PropertyMap() {
+export default function PropertyMap({
+  latitude,
+  longitude,
+  location,
+}: {
+  latitude?: number | null;
+  longitude?: number | null;
+  location?: string;
+}) {
   const mounted = useSyncExternalStore(
     () => () => undefined,
     () => true,
     () => false
   );
-  const position: [number, number] = [37.4419, -122.143]; // Default to Palo Alto
+  const hasCoordinates = latitude != null && longitude != null;
+  const position: [number, number] = hasCoordinates
+    ? [Number(latitude), Number(longitude)]
+    : [37.4419, -122.143];
 
   if (!mounted) {
     return (
@@ -43,7 +54,7 @@ export default function PropertyMap() {
           url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
         />
         <Marker position={position} icon={customIcon}>
-          <Popup>1234 Serenity Lane, Palo Alto, CA</Popup>
+          <Popup>{location || "Property location"}</Popup>
         </Marker>
       </MapContainer>
     </div>

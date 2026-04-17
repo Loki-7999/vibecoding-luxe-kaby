@@ -385,7 +385,9 @@ export default function AdminPropertyFormScreen({
         image_alt: formValues.title.trim(),
         image_url: galleryUrls[0],
         is_draft: isDraft,
+        latitude: formValues.latitude ? Number(formValues.latitude) : null,
         location: formValues.location.trim(),
+        longitude: formValues.longitude ? Number(formValues.longitude) : null,
         parking: formValues.parking,
         price: Number(formValues.price),
         price_type: formValues.status === "rent" ? "rent" : "sale",
@@ -850,6 +852,42 @@ export default function AdminPropertyFormScreen({
                       type="text"
                       value={formValues.location}
                     />
+                  </div>
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div>
+                      <label
+                        className="font-sf-pro mb-1.5 block text-sm font-medium text-nordic-dark"
+                        htmlFor="latitude"
+                      >
+                        Latitude
+                      </label>
+                      <input
+                        className="font-sf-pro w-full rounded-md border-gray-200 bg-white px-4 py-2.5 text-sm text-nordic-dark placeholder-gray-400 transition-all focus:border-mosque focus:ring-1 focus:ring-mosque"
+                        id="latitude"
+                        onChange={(event) => setFieldValue("latitude", event.target.value)}
+                        placeholder="e.g. 19.432608"
+                        step="any"
+                        type="number"
+                        value={formValues.latitude}
+                      />
+                    </div>
+                    <div>
+                      <label
+                        className="font-sf-pro mb-1.5 block text-sm font-medium text-nordic-dark"
+                        htmlFor="longitude"
+                      >
+                        Longitude
+                      </label>
+                      <input
+                        className="font-sf-pro w-full rounded-md border-gray-200 bg-white px-4 py-2.5 text-sm text-nordic-dark placeholder-gray-400 transition-all focus:border-mosque focus:ring-1 focus:ring-mosque"
+                        id="longitude"
+                        onChange={(event) => setFieldValue("longitude", event.target.value)}
+                        placeholder="e.g. -99.133209"
+                        step="any"
+                        type="number"
+                        value={formValues.longitude}
+                      />
+                    </div>
                   </div>
                   <div className="group relative h-48 w-full overflow-hidden rounded-lg border border-gray-200 bg-gray-100">
                     {/* eslint-disable-next-line @next/next/no-img-element */}

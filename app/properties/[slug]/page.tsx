@@ -141,7 +141,11 @@ export default async function PropertyDetailsPage({
 
               <div className="bg-white p-2 rounded-xl shadow-sm border border-mosque/5">
                 <div className="relative w-full aspect-[4/3] rounded-lg overflow-hidden bg-slate-100">
-                  <MapClientWrapper />
+                  <MapClientWrapper
+                    latitude={property.latitude}
+                    location={property.location}
+                    longitude={property.longitude}
+                  />
                   <a className="absolute bottom-2 right-2 z-10 bg-white/90 text-xs font-medium px-2 py-1 rounded shadow-sm text-nordic hover:text-mosque" href="#map">
                     {t.viewOnMap}
                   </a>
