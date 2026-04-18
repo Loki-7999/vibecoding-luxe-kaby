@@ -460,7 +460,7 @@ export default function AdminUsersScreen() {
                   <span className="material-icons text-xl">chevron_left</span>
                 </button>
                 {paginationItems.map((item, index) =>
-                  item === "..." ? (
+                  typeof item !== "number" ? (
                     <span
                       className="relative mx-1 inline-flex items-center px-1 text-sm font-medium text-nordic/40"
                       key={`ellipsis-${index}`}
