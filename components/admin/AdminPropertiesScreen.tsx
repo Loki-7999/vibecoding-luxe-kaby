@@ -2,8 +2,9 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { supabase } from "@/lib/supabase";
 import type { Property } from "@/lib/queries";
+import { SUPABASE_CONFIG_ERROR, hasSupabaseEnv } from "@/lib/supabase-config";
+import { getSupabaseClient } from "@/lib/supabase";
 import AdminProfileMenu from "@/components/admin/AdminProfileMenu";
 import {
   ADMIN_PRIMARY_ACTION_BUTTON_CLASSNAME,
@@ -30,6 +31,13 @@ export default function AdminPropertiesScreen() {
       setError(null);
       setSuccessMessage(null);
 
+      if (!hasSupabaseEnv()) {
+        setError(SUPABASE_CONFIG_ERROR);
+        setLoading(false);
+        return;
+      }
+
+      const supabase = getSupabaseClient();
       const { data, error: propertiesError } = await supabase
         .from("properties")
         .select("*")
@@ -72,6 +80,12 @@ export default function AdminPropertiesScreen() {
   );
 
   const handleTogglePropertyActive = async (property: Property) => {
+    if (!hasSupabaseEnv()) {
+      setError(SUPABASE_CONFIG_ERROR);
+      return;
+    }
+
+    const supabase = getSupabaseClient();
     const nextIsActive = property.is_active === false;
 
     setIsTogglingPropertyId(property.id);

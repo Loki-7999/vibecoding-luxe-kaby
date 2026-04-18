@@ -17,7 +17,8 @@ import {
 } from "@/lib/admin-properties";
 import { getRoleLabel } from "@/lib/admin";
 import type { Property } from "@/lib/queries";
-import { supabase } from "@/lib/supabase";
+import { SUPABASE_CONFIG_ERROR, hasSupabaseEnv } from "@/lib/supabase-config";
+import { getSupabaseClient } from "@/lib/supabase";
 import MapClientWrapper from "@/components/MapClientWrapper";
 import { useAdminIdentity } from "@/components/admin/shared";
 
@@ -145,6 +146,13 @@ export default function AdminPropertyFormScreen({
       setIsLoading(true);
       setError(null);
 
+      if (!hasSupabaseEnv()) {
+        setError(SUPABASE_CONFIG_ERROR);
+        setIsLoading(false);
+        return;
+      }
+
+      const supabase = getSupabaseClient();
       const { data, error: propertyError } = await supabase
         .from("properties")
         .select("*")
@@ -306,6 +314,7 @@ export default function AdminPropertyFormScreen({
   };
 
   const getResolvedSlug = async () => {
+    const supabase = getSupabaseClient();
     const baseSlug =
       slugifyPropertyTitle(formValues.title) || `property-${Date.now().toString().slice(-6)}`;
 
@@ -335,8 +344,12 @@ export default function AdminPropertyFormScreen({
     setSuccessMessage(null);
 
     const uploadedPaths: string[] = [];
+    const supabase = hasSupabaseEnv() ? getSupabaseClient() : null;
 
     try {
+      if (!supabase) {
+        throw new Error(SUPABASE_CONFIG_ERROR);
+      }
       if (!formValues.title.trim()) {
         throw new Error("Property title is required.");
       }
@@ -474,7 +487,7 @@ export default function AdminPropertyFormScreen({
         router.refresh();
       }
     } catch (submitError) {
-      if (uploadedPaths.length > 0) {
+      if (uploadedPaths.length > 0 && supabase) {
         const { error: cleanupError } = await supabase.storage
           .from(PROPERTY_IMAGES_BUCKET)
           .remove(uploadedPaths);

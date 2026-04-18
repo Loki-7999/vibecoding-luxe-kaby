@@ -2,8 +2,9 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { supabase } from "@/lib/supabase";
 import { APP_ROLES, getRoleLabel, type AdminUserRecord, type AppRole } from "@/lib/admin";
+import { SUPABASE_CONFIG_ERROR, hasSupabaseEnv } from "@/lib/supabase-config";
+import { getSupabaseClient } from "@/lib/supabase";
 import AdminProfileMenu from "@/components/admin/AdminProfileMenu";
 import {
   ADMIN_PRIMARY_ACTION_BUTTON_CLASSNAME,
@@ -51,6 +52,13 @@ export default function AdminUsersScreen() {
       setLoading(true);
       setError(null);
 
+      if (!hasSupabaseEnv()) {
+        setError(SUPABASE_CONFIG_ERROR);
+        setLoading(false);
+        return;
+      }
+
+      const supabase = getSupabaseClient();
       const { data, error: usersError } = await supabase.rpc("get_admin_users");
 
       if (!isActive) return;
@@ -119,6 +127,12 @@ export default function AdminUsersScreen() {
   );
 
   const handleRoleChange = async (targetUserId: string, nextRole: AppRole) => {
+    if (!hasSupabaseEnv()) {
+      setError(SUPABASE_CONFIG_ERROR);
+      return;
+    }
+
+    const supabase = getSupabaseClient();
     setSavingUserId(targetUserId);
     setError(null);
 

@@ -1,4 +1,5 @@
-import { supabase } from './supabase';
+import { hasSupabaseEnv, warnMissingSupabaseEnv } from "./supabase-config";
+import { getSupabaseClient } from "./supabase";
 
 export interface Property {
   id: string;
@@ -37,6 +38,15 @@ export interface PaginatedProperties {
 
 const ITEMS_PER_PAGE = 8;
 
+function getQuerySupabaseClient() {
+  if (!hasSupabaseEnv()) {
+    warnMissingSupabaseEnv("queries");
+    return null;
+  }
+
+  return getSupabaseClient();
+}
+
 function filterVisibleProperties(properties: Property[]) {
   return properties.filter(
     (property) => property.is_active !== false && property.is_draft !== true
@@ -44,6 +54,11 @@ function filterVisibleProperties(properties: Property[]) {
 }
 
 export async function getFeaturedProperties(): Promise<Property[]> {
+  const supabase = getQuerySupabaseClient();
+  if (!supabase) {
+    return [];
+  }
+
   const { data, error } = await supabase
     .from('properties')
     .select('*')
@@ -59,6 +74,11 @@ export async function getFeaturedProperties(): Promise<Property[]> {
 }
 
 export async function getPaginatedProperties(page: number = 1, searchQuery?: string, type?: string): Promise<PaginatedProperties> {
+  const supabase = getQuerySupabaseClient();
+  if (!supabase) {
+    return { properties: [], total: 0, page, totalPages: 0 };
+  }
+
   const { data, error } = await supabase
     .from('properties')
     .select('*')
@@ -107,6 +127,11 @@ export async function getPaginatedProperties(page: number = 1, searchQuery?: str
 }
 
 export async function getPropertyBySlug(slug: string): Promise<Property | null> {
+  const supabase = getQuerySupabaseClient();
+  if (!supabase) {
+    return null;
+  }
+
   const { data, error } = await supabase
     .from('properties')
     .select('*')

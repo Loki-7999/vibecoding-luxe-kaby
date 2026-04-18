@@ -2,8 +2,13 @@
 
 import type { Session, User } from "@supabase/supabase-js";
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { supabase } from "@/lib/supabase";
 import type { AppRole } from "@/lib/admin";
+import {
+  SUPABASE_CONFIG_ERROR,
+  hasSupabaseEnv,
+  warnMissingSupabaseEnv,
+} from "@/lib/supabase-config";
+import { getSupabaseClient } from "@/lib/supabase";
 
 type AuthContextValue = {
   user: User | null;
@@ -21,9 +26,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [role, setRole] = useState<AppRole | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => hasSupabaseEnv());
 
   useEffect(() => {
+    if (!hasSupabaseEnv()) {
+      warnMissingSupabaseEnv("auth-provider");
+      return;
+    }
+
+    const supabase = getSupabaseClient();
     let isMounted = true;
 
     const syncServerSession = async (nextSession: Session | null) => {
@@ -119,6 +130,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signInWithProvider = async (provider: "google" | "github") => {
+    if (!hasSupabaseEnv()) {
+      throw new Error(SUPABASE_CONFIG_ERROR);
+    }
+
+    const supabase = getSupabaseClient();
     const redirectTo =
       typeof window !== "undefined" ? `${window.location.origin}/` : undefined;
     const { error } = await supabase.auth.signInWithOAuth({
@@ -139,6 +155,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       signInWithGoogle: () => signInWithProvider("google"),
       signInWithGithub: () => signInWithProvider("github"),
       signOut: async () => {
+        if (!hasSupabaseEnv()) {
+          return;
+        }
+
+        const supabase = getSupabaseClient();
         const { error } = await supabase.auth.signOut();
         if (error) throw error;
       },
