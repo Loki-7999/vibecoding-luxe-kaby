@@ -2,6 +2,7 @@
 
 import { useAuth } from "@/components/providers/AuthProvider";
 import type { AppRole } from "@/lib/admin";
+import { getAvatarInitials, getAvatarSrc } from "@/lib/avatar";
 import type { Property } from "@/lib/queries";
 
 export const ADMIN_PAGE_SIZE = 5;
@@ -49,9 +50,13 @@ export function useAdminIdentity() {
     githubHandle ||
     user?.email ||
     "Guest";
+  const avatarInitials = getAvatarInitials(displayName);
+  const avatarSrc = getAvatarSrc(avatarUrl, displayName);
 
   return {
     avatarAlt: displayName,
+    avatarInitials,
+    avatarSrc,
     avatarUrl,
     displayName,
     email: user?.email ?? "No email",

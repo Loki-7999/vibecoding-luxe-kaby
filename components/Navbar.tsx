@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import LanguageSwitcher from "./LanguageSwitcher";
 import { useTranslation } from "@/components/providers/I18nProvider";
 import { useAuth } from "@/components/providers/AuthProvider";
+import { getAvatarInitials, getAvatarSrc } from "@/lib/avatar";
 
 export default function Navbar() {
   const { t } = useTranslation();
@@ -54,6 +55,8 @@ export default function Navbar() {
     githubHandle ||
     user?.email ||
     t("nav.account");
+  const avatarInitials = getAvatarInitials(displayName);
+  const avatarSrc = getAvatarSrc(avatarUrl, displayName);
 
   useEffect(() => {
     if (!isProfileMenuOpen) return;
@@ -153,11 +156,13 @@ export default function Navbar() {
                   type="button"
                 >
                   <div className="w-9 h-9 rounded-full bg-gray-200 overflow-hidden ring-2 ring-transparent hover:ring-mosque transition-all flex items-center justify-center">
-                    {user && avatarUrl ? (
+                    {user ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img alt={avatarAlt} className="w-full h-full object-cover" src={avatarUrl} />
+                      <img alt={avatarAlt} className="w-full h-full object-cover" src={avatarSrc} />
                     ) : (
-                      <span className="material-icons text-nordic-dark/70">person</span>
+                      <span className="text-sm font-semibold text-nordic-dark/70">
+                        {user ? avatarInitials || "?" : "?"}
+                      </span>
                     )}
                   </div>
                   <div className="hidden sm:flex flex-col items-start leading-tight max-w-36">
@@ -184,11 +189,13 @@ export default function Navbar() {
                   >
                     <div className="flex items-center gap-3 rounded-2xl bg-sand-light/50 dark:bg-white/5 px-3 py-3">
                       <div className="w-11 h-11 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center shrink-0">
-                        {user && avatarUrl ? (
+                        {user ? (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img alt={avatarAlt} className="w-full h-full object-cover" src={avatarUrl} />
+                          <img alt={avatarAlt} className="w-full h-full object-cover" src={avatarSrc} />
                         ) : (
-                          <span className="material-icons text-nordic-dark/70">person</span>
+                          <span className="text-sm font-semibold text-nordic-dark/70">
+                            {user ? avatarInitials || "?" : "?"}
+                          </span>
                         )}
                       </div>
                       <div className="min-w-0">
@@ -204,14 +211,14 @@ export default function Navbar() {
                     <div className="mt-3">
                       {user ? (
                         <div className="space-y-1">
-                          {role === "admin" ? (
+                          {user ? (
                             <Link
                               className="w-full flex items-center justify-between rounded-2xl px-3 py-3 text-sm font-semibold text-nordic-dark dark:text-white hover:bg-mosque/10 hover:text-mosque transition-colors"
                               href="/admin/properties"
                               onClick={() => setIsProfileMenuOpen(false)}
                               role="menuitem"
                             >
-                              <span>Admin dashboard</span>
+                              <span>{role === "admin" ? "Admin dashboard" : "Dashboard"}</span>
                               <span className="material-icons text-[18px]">shield</span>
                             </Link>
                           ) : null}

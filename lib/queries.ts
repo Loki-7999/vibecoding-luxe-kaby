@@ -3,8 +3,11 @@ import {
   newProperties as staticNewProperties,
   type Property as StaticProperty,
 } from "./data";
-import { hasSupabaseEnv, warnMissingSupabaseEnv } from "./supabase-config";
-import { getSupabaseClient } from "./supabase";
+import {
+  getSupabaseEnv,
+  hasSupabaseEnv,
+  warnMissingSupabaseEnv,
+} from "./supabase-config";
 
 export interface Property {
   id: string;
@@ -164,13 +167,44 @@ function getFallbackPropertyBySlug(slug: string) {
   return staticCatalogProperties.find((property) => property.slug === slug) ?? null;
 }
 
-function getQuerySupabaseClient() {
+function getSupabaseRestConfig() {
   if (!hasSupabaseEnv()) {
     warnMissingSupabaseEnv("queries");
     return null;
   }
 
-  return getSupabaseClient();
+  return getSupabaseEnv();
+}
+
+async function fetchPublicProperties(query: Record<string, string>) {
+  const config = getSupabaseRestConfig();
+  if (!config) {
+    return null;
+  }
+
+  const searchParams = new URLSearchParams({
+    select: "*",
+    ...query,
+  });
+
+  const response = await fetch(
+    `${config.supabaseUrl}/rest/v1/properties?${searchParams.toString()}`,
+    {
+      headers: {
+        apikey: config.supabaseAnonKey,
+        Authorization: `Bearer ${config.supabaseAnonKey}`,
+      },
+      next: {
+        revalidate: 60,
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(`Supabase REST query failed with status ${response.status}.`);
+  }
+
+  return (await response.json()) as Property[];
 }
 
 function filterVisibleProperties(properties: Property[]) {
@@ -180,38 +214,37 @@ function filterVisibleProperties(properties: Property[]) {
 }
 
 export async function getFeaturedProperties(): Promise<Property[]> {
-  const supabase = getQuerySupabaseClient();
-  if (!supabase) {
+  if (!hasSupabaseEnv()) {
     return getFallbackFeaturedProperties();
   }
 
-  const { data, error } = await supabase
-    .from('properties')
-    .select('*')
-    .eq('featured', true)
-    .order('created_at', { ascending: true })
-    .limit(2);
+  try {
+    const data = await fetchPublicProperties({
+      featured: "eq.true",
+      order: "created_at.asc",
+      limit: "2",
+    });
 
-  if (error) {
-    console.error('Error fetching featured properties:', error);
+    return filterVisibleProperties(data ?? []);
+  } catch (error) {
+    console.error("Error fetching featured properties:", error);
     return getFallbackFeaturedProperties();
   }
-  return filterVisibleProperties((data as Property[]) ?? []);
 }
 
 export async function getPaginatedProperties(page: number = 1, searchQuery?: string, type?: string): Promise<PaginatedProperties> {
-  const supabase = getQuerySupabaseClient();
-  if (!supabase) {
+  if (!hasSupabaseEnv()) {
     return getFallbackPaginatedProperties(page, searchQuery, type);
   }
 
-  const { data, error } = await supabase
-    .from('properties')
-    .select('*')
-    .order('created_at', { ascending: true });
+  let data: Property[] | null = null;
 
-  if (error) {
-    console.error('Error fetching properties:', error);
+  try {
+    data = await fetchPublicProperties({
+      order: "created_at.asc",
+    });
+  } catch (error) {
+    console.error("Error fetching properties:", error);
     return getFallbackPaginatedProperties(page, searchQuery, type);
   }
 
@@ -219,7 +252,7 @@ export async function getPaginatedProperties(page: number = 1, searchQuery?: str
     ? searchQuery.split(',')[0].trim().replace(/[^a-zA-Z0-9 ]/g, '').toLowerCase()
     : '';
 
-  const filtered = filterVisibleProperties((data as Property[]) ?? []).filter((property) => {
+  const filtered = filterVisibleProperties(data ?? []).filter((property) => {
     if (!searchQuery && property.featured) {
       return false;
     }
@@ -253,24 +286,23 @@ export async function getPaginatedProperties(page: number = 1, searchQuery?: str
 }
 
 export async function getPropertyBySlug(slug: string): Promise<Property | null> {
-  const supabase = getQuerySupabaseClient();
-  if (!supabase) {
+  if (!hasSupabaseEnv()) {
     return getFallbackPropertyBySlug(slug);
   }
 
-  const { data, error } = await supabase
-    .from('properties')
-    .select('*')
-    .eq('slug', slug)
-    .single();
+  try {
+    const data = await fetchPublicProperties({
+      slug: `eq.${slug}`,
+      limit: "1",
+    });
 
-  if (error || !data) {
-    if (error && error.code !== 'PGRST116') {
-      console.error('Error fetching property by slug:', error);
-      return getFallbackPropertyBySlug(slug);
+    if (!data?.[0]) {
+      return null;
     }
+
+    return filterVisibleProperties([data[0]])[0] ?? null;
+  } catch (error) {
+    console.error("Error fetching property by slug:", error);
     return null;
   }
-  const property = data as Property;
-  return filterVisibleProperties([property])[0] ?? null;
 }

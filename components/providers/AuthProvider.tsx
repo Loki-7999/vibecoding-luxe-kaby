@@ -136,7 +136,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const supabase = getSupabaseClient();
     const redirectTo =
-      typeof window !== "undefined" ? `${window.location.origin}/` : undefined;
+      typeof window !== "undefined" ? `${window.location.origin}/auth/callback` : undefined;
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {

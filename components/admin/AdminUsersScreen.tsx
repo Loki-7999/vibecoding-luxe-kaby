@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { APP_ROLES, getRoleLabel, type AdminUserRecord, type AppRole } from "@/lib/admin";
+import { getAvatarSrc } from "@/lib/avatar";
 import { SUPABASE_CONFIG_ERROR, hasSupabaseEnv } from "@/lib/supabase-config";
 import { getSupabaseClient } from "@/lib/supabase";
 import AdminProfileMenu from "@/components/admin/AdminProfileMenu";
@@ -301,6 +302,8 @@ export default function AdminUsersScreen() {
             const isCurrentUser = entry.user_id === user?.id;
             const isOpen = openMenuUserId === entry.user_id;
             const isFeatured = entry.user_id === featuredUserId && !isOpen;
+            const entryDisplayName = entry.full_name ?? entry.email ?? "User";
+            const entryAvatarSrc = getAvatarSrc(entry.avatar_url, entryDisplayName);
 
             return (
               <div
@@ -314,18 +317,12 @@ export default function AdminUsersScreen() {
                 <div className="col-span-12 flex w-full items-center md:col-span-4">
                   <div className="relative flex-shrink-0">
                     <div className="h-12 w-12 overflow-hidden rounded-full border-2 border-white bg-gray-200 dark:border-primary">
-                      {entry.avatar_url ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          alt={entry.full_name ?? entry.email ?? "User"}
-                          className="h-full w-full object-cover"
-                          src={entry.avatar_url}
-                        />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center text-nordic/50">
-                          <span className="material-icons text-lg">person</span>
-                        </div>
-                      )}
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        alt={entryDisplayName}
+                        className="h-full w-full object-cover"
+                        src={entryAvatarSrc}
+                      />
                     </div>
                     <span
                       className={`absolute bottom-0 right-0 block h-3 w-3 rounded-full ${presence.dotClassName} ring-2 ring-white`}

@@ -16,7 +16,7 @@ export default function AdminProfileMenu() {
   const pathname = usePathname();
   const router = useRouter();
   const { signOut } = useAuth();
-  const { avatarAlt, avatarUrl, displayName, email, role } = useAdminIdentity();
+  const { avatarAlt, avatarSrc, displayName, email, role } = useAdminIdentity();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
@@ -69,14 +69,8 @@ export default function AdminProfileMenu() {
         type="button"
       >
         <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-gray-200 ring-2 ring-transparent transition-all hover:ring-primary/30 dark:bg-primary/10">
-          {avatarUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img alt={avatarAlt} className="h-full w-full object-cover" src={avatarUrl} />
-          ) : (
-            <span className="material-icons text-lg text-nordic-dark/70 dark:text-gray-300">
-              person
-            </span>
-          )}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img alt={avatarAlt} className="h-full w-full object-cover" src={avatarSrc} />
         </div>
         <div className="hidden min-w-0 flex-col items-start text-left sm:flex">
           <span className="max-w-36 truncate text-sm font-semibold text-nordic-dark dark:text-white">
@@ -102,12 +96,8 @@ export default function AdminProfileMenu() {
         >
           <div className="flex items-center gap-3 rounded-2xl bg-accent/70 px-3 py-3 dark:bg-white/5">
             <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-gray-200 dark:bg-primary/10">
-              {avatarUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img alt={avatarAlt} className="h-full w-full object-cover" src={avatarUrl} />
-              ) : (
-                <span className="material-icons text-nordic-dark/70 dark:text-gray-300">person</span>
-              )}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img alt={avatarAlt} className="h-full w-full object-cover" src={avatarSrc} />
             </div>
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold text-nordic-dark dark:text-white">
@@ -118,7 +108,7 @@ export default function AdminProfileMenu() {
           </div>
 
           <div className="mt-3 space-y-1">
-            {ADMIN_NAV_LINKS.map((link) => {
+            {ADMIN_NAV_LINKS.filter((link) => role === "admin" || link.href !== "/admin/users").map((link) => {
               const isActive = pathname === link.href;
 
               return (
@@ -133,7 +123,7 @@ export default function AdminProfileMenu() {
                   onClick={() => setIsMenuOpen(false)}
                   role="menuitem"
                 >
-                  <span>{link.label}</span>
+                  <span>{role !== "admin" && link.href === "/admin/properties" ? "Dashboard" : link.label}</span>
                   <span className="material-icons text-[18px]">{link.icon}</span>
                 </Link>
               );

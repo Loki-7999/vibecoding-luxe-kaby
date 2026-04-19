@@ -12,6 +12,10 @@ function redirectToForbidden(request: NextRequest) {
   return NextResponse.redirect(new URL("/forbidden", request.url));
 }
 
+function requiresAdminRole(pathname: string) {
+  return pathname.startsWith("/admin/users");
+}
+
 export async function proxy(request: NextRequest) {
   const accessToken = request.cookies.get(ACCESS_TOKEN_COOKIE)?.value;
   const refreshToken = request.cookies.get(REFRESH_TOKEN_COOKIE)?.value;
@@ -34,12 +38,6 @@ export async function proxy(request: NextRequest) {
     return response;
   }
 
-  const role = await getUserRole(currentAccessToken, user.id);
-
-  if (role !== "admin") {
-    return redirectToForbidden(request);
-  }
-
   const response = NextResponse.next();
 
   if (refreshedSession?.access_token) {
@@ -47,6 +45,14 @@ export async function proxy(request: NextRequest) {
       accessToken: refreshedSession.access_token,
       refreshToken: refreshedSession.refresh_token,
     });
+  }
+
+  if (requiresAdminRole(request.nextUrl.pathname)) {
+    const role = await getUserRole(currentAccessToken, user.id);
+
+    if (role !== "admin") {
+      return redirectToForbidden(request);
+    }
   }
 
   return response;
