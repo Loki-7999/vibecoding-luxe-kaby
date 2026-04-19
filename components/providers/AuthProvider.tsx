@@ -137,13 +137,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const supabase = getSupabaseClient();
     const redirectTo =
       typeof window !== "undefined" ? `${window.location.origin}/` : undefined;
-    const { error } = await supabase.auth.signInWithOAuth({
+    const { data, error } = await supabase.auth.signInWithOAuth({
       provider,
-      options: { redirectTo },
+      options: {
+        redirectTo,
+        skipBrowserRedirect: true,
+      },
     });
     if (error) {
       throw error;
     }
+
+    if (!data?.url) {
+      throw new Error(`No OAuth URL was returned for ${provider}.`);
+    }
+
+    window.location.assign(data.url);
   };
 
   const value = useMemo<AuthContextValue>(
