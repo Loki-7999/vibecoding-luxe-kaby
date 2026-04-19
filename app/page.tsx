@@ -5,6 +5,7 @@ import PropertyCard from "@/components/PropertyCard";
 import Pagination from "@/components/Pagination";
 import SearchAndFilters from "@/components/SearchAndFilters";
 import { getFeaturedProperties, getPaginatedProperties, type Property } from "@/lib/queries";
+import { hasSupabaseEnv } from "@/lib/supabase-config";
 import { getLocale, getDictionary } from "@/lib/i18n";
 
 interface HomePageProps {
@@ -22,6 +23,7 @@ export default async function Home({ searchParams }: HomePageProps) {
     getPaginatedProperties(currentPage, searchQuery, propertyType),
     getLocale(),
   ]);
+  const isUsingDemoCatalog = !hasSupabaseEnv();
 
   const dictionary = await getDictionary(locale);
   const { properties, totalPages } = paginated;
@@ -40,6 +42,11 @@ export default async function Home({ searchParams }: HomePageProps) {
               </span>
               {dictionary.hero.dot}
             </h1>
+            {isUsingDemoCatalog ? (
+              <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 shadow-sm">
+                Showing demo properties because Supabase is not configured in this deployment yet.
+              </div>
+            ) : null}
             <Suspense fallback={<div className="h-[60px]" />}>
               <SearchAndFilters />
             </Suspense>

@@ -1,3 +1,8 @@
+import {
+  featuredProperties as staticFeaturedProperties,
+  newProperties as staticNewProperties,
+  type Property as StaticProperty,
+} from "./data";
 import { hasSupabaseEnv, warnMissingSupabaseEnv } from "./supabase-config";
 import { getSupabaseClient } from "./supabase";
 
@@ -38,6 +43,127 @@ export interface PaginatedProperties {
 
 const ITEMS_PER_PAGE = 8;
 
+function slugifyValue(value: string) {
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function inferPropertyType(property: StaticProperty) {
+  const normalizedTitle = property.title.toLowerCase();
+
+  if (normalizedTitle.includes("penthouse")) {
+    return "Penthouse";
+  }
+
+  if (
+    normalizedTitle.includes("apartment") ||
+    normalizedTitle.includes("studio") ||
+    normalizedTitle.includes("condo") ||
+    normalizedTitle.includes("loft")
+  ) {
+    return "Apartment";
+  }
+
+  if (
+    normalizedTitle.includes("villa") ||
+    normalizedTitle.includes("bungalow") ||
+    normalizedTitle.includes("pavilion")
+  ) {
+    return "Villa";
+  }
+
+  return "House";
+}
+
+function toCatalogProperty(property: StaticProperty, index: number): Property {
+  const createdAt = new Date(Date.UTC(2025, 0, index + 1)).toISOString();
+
+  return {
+    id: property.id,
+    slug: slugifyValue(property.title),
+    title: property.title,
+    location: property.location,
+    description: null,
+    price: property.price,
+    price_type: property.priceType,
+    bedrooms: property.bedrooms,
+    bathrooms: property.bathrooms,
+    area: property.area,
+    image_url: property.imageUrl,
+    image_alt: property.imageAlt,
+    gallery_urls: [property.imageUrl],
+    amenities: [],
+    badge: property.badge ?? null,
+    featured: Boolean(property.featured),
+    is_active: true,
+    is_draft: false,
+    created_at: createdAt,
+    updated_at: createdAt,
+    property_type: inferPropertyType(property),
+    latitude: null,
+    longitude: null,
+    parking: null,
+    year_built: null,
+  };
+}
+
+const staticCatalogProperties = [...staticFeaturedProperties, ...staticNewProperties].map(
+  toCatalogProperty
+);
+
+function getFallbackFeaturedProperties() {
+  return staticCatalogProperties.filter((property) => property.featured).slice(0, 2);
+}
+
+function getFallbackPaginatedProperties(
+  page: number,
+  searchQuery?: string,
+  type?: string
+): PaginatedProperties {
+  const primaryTerm = searchQuery
+    ? searchQuery.split(",")[0].trim().replace(/[^a-zA-Z0-9 ]/g, "").toLowerCase()
+    : "";
+
+  const filtered = staticCatalogProperties.filter((property) => {
+    if (!searchQuery && property.featured) {
+      return false;
+    }
+
+    if (
+      primaryTerm &&
+      !property.title.toLowerCase().includes(primaryTerm) &&
+      !property.location.toLowerCase().includes(primaryTerm)
+    ) {
+      return false;
+    }
+
+    if (type && type !== "All" && property.property_type !== type) {
+      return false;
+    }
+
+    return true;
+  });
+
+  const total = filtered.length;
+  const totalPages = Math.ceil(total / ITEMS_PER_PAGE);
+  const from = (page - 1) * ITEMS_PER_PAGE;
+  const to = from + ITEMS_PER_PAGE;
+
+  return {
+    properties: filtered.slice(from, to),
+    total,
+    page,
+    totalPages,
+  };
+}
+
+function getFallbackPropertyBySlug(slug: string) {
+  return staticCatalogProperties.find((property) => property.slug === slug) ?? null;
+}
+
 function getQuerySupabaseClient() {
   if (!hasSupabaseEnv()) {
     warnMissingSupabaseEnv("queries");
@@ -56,7 +182,7 @@ function filterVisibleProperties(properties: Property[]) {
 export async function getFeaturedProperties(): Promise<Property[]> {
   const supabase = getQuerySupabaseClient();
   if (!supabase) {
-    return [];
+    return getFallbackFeaturedProperties();
   }
 
   const { data, error } = await supabase
@@ -68,7 +194,7 @@ export async function getFeaturedProperties(): Promise<Property[]> {
 
   if (error) {
     console.error('Error fetching featured properties:', error);
-    return [];
+    return getFallbackFeaturedProperties();
   }
   return filterVisibleProperties((data as Property[]) ?? []);
 }
@@ -76,7 +202,7 @@ export async function getFeaturedProperties(): Promise<Property[]> {
 export async function getPaginatedProperties(page: number = 1, searchQuery?: string, type?: string): Promise<PaginatedProperties> {
   const supabase = getQuerySupabaseClient();
   if (!supabase) {
-    return { properties: [], total: 0, page, totalPages: 0 };
+    return getFallbackPaginatedProperties(page, searchQuery, type);
   }
 
   const { data, error } = await supabase
@@ -86,7 +212,7 @@ export async function getPaginatedProperties(page: number = 1, searchQuery?: str
 
   if (error) {
     console.error('Error fetching properties:', error);
-    return { properties: [], total: 0, page, totalPages: 0 };
+    return getFallbackPaginatedProperties(page, searchQuery, type);
   }
 
   const primaryTerm = searchQuery
@@ -129,7 +255,7 @@ export async function getPaginatedProperties(page: number = 1, searchQuery?: str
 export async function getPropertyBySlug(slug: string): Promise<Property | null> {
   const supabase = getQuerySupabaseClient();
   if (!supabase) {
-    return null;
+    return getFallbackPropertyBySlug(slug);
   }
 
   const { data, error } = await supabase
@@ -141,6 +267,7 @@ export async function getPropertyBySlug(slug: string): Promise<Property | null> 
   if (error || !data) {
     if (error && error.code !== 'PGRST116') {
       console.error('Error fetching property by slug:', error);
+      return getFallbackPropertyBySlug(slug);
     }
     return null;
   }
