@@ -1,22 +1,25 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useAuth } from "@/components/providers/AuthProvider";
 
 export default function LoginPage() {
   const { signInWithGoogle, signInWithGithub } = useAuth();
+  const searchParams = useSearchParams();
   const [activeProvider, setActiveProvider] = useState<"google" | "github" | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const nextPath = searchParams.get("next") ?? undefined;
 
   const handleSignIn = async (provider: "google" | "github") => {
     setError(null);
     setActiveProvider(provider);
     try {
       if (provider === "google") {
-        await signInWithGoogle();
+        await signInWithGoogle(nextPath);
       } else {
-        await signInWithGithub();
+        await signInWithGithub(nextPath);
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : "Authentication failed.";

@@ -15,12 +15,36 @@ export default function AuthCallbackPage() {
     const finalizeSession = async () => {
       const supabase = getSupabaseClient();
       const code = searchParams.get("code");
+      const nextPath = searchParams.get("next");
 
       try {
+        const hashParams = new URLSearchParams(
+          typeof window !== "undefined" ? window.location.hash.replace(/^#/, "") : ""
+        );
+        const hashError = hashParams.get("error_description") || hashParams.get("error");
+
+        if (hashError) {
+          throw new Error(hashError);
+        }
+
         if (code) {
           const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
           if (exchangeError) {
             throw exchangeError;
+          }
+        } else {
+          const accessToken = hashParams.get("access_token");
+          const refreshToken = hashParams.get("refresh_token");
+
+          if (accessToken && refreshToken) {
+            const { error: setSessionError } = await supabase.auth.setSession({
+              access_token: accessToken,
+              refresh_token: refreshToken,
+            });
+
+            if (setSessionError) {
+              throw setSessionError;
+            }
           }
         }
 
@@ -46,7 +70,7 @@ export default function AuthCallbackPage() {
           }),
         });
 
-        router.replace("/");
+        router.replace(nextPath?.startsWith("/") ? nextPath : "/");
         router.refresh();
       } catch (callbackError) {
         if (!isMounted) return;

@@ -15,8 +15,8 @@ type AuthContextValue = {
   session: Session | null;
   role: AppRole | null;
   loading: boolean;
-  signInWithGoogle: () => Promise<void>;
-  signInWithGithub: () => Promise<void>;
+  signInWithGoogle: (nextPath?: string) => Promise<void>;
+  signInWithGithub: (nextPath?: string) => Promise<void>;
   signOut: () => Promise<void>;
 };
 
@@ -129,14 +129,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  const signInWithProvider = async (provider: "google" | "github") => {
+  const signInWithProvider = async (provider: "google" | "github", nextPath?: string) => {
     if (!hasSupabaseEnv()) {
       throw new Error(SUPABASE_CONFIG_ERROR);
     }
 
     const supabase = getSupabaseClient();
     const redirectTo =
-      typeof window !== "undefined" ? `${window.location.origin}/auth/callback` : undefined;
+      typeof window !== "undefined"
+        ? `${window.location.origin}/auth/callback${
+            nextPath?.startsWith("/") ? `?next=${encodeURIComponent(nextPath)}` : ""
+          }`
+        : undefined;
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
@@ -161,8 +165,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       session,
       role,
       loading,
-      signInWithGoogle: () => signInWithProvider("google"),
-      signInWithGithub: () => signInWithProvider("github"),
+      signInWithGoogle: (nextPath?: string) => signInWithProvider("google", nextPath),
+      signInWithGithub: (nextPath?: string) => signInWithProvider("github", nextPath),
       signOut: async () => {
         if (!hasSupabaseEnv()) {
           return;
